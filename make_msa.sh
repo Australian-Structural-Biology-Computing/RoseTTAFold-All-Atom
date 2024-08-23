@@ -20,14 +20,15 @@ DB_UR30="$uniref30_path"
 DB_BFD="$bfd_path"
 
 # Running signalP 6.0
-mkdir -p $out_dir/signalp
-tmp_dir="$out_dir/signalp"
-signalp6 --fastafile $in_fasta --organism other --output_dir $tmp_dir --format none --mode slow
-trim_fasta="$tmp_dir/processed_entries.fasta"
-if [ ! -s $trim_fasta ] # empty file -- no signal P
-then
-    trim_fasta="$in_fasta"
-fi
+#mkdir -p $out_dir/signalp
+#tmp_dir="$out_dir/signalp"
+#signalp6 --fastafile $in_fasta --organism other --output_dir $tmp_dir --format none --mode slow
+#trim_fasta="$tmp_dir/processed_entries.fasta"
+#if [ ! -s $trim_fasta ] # empty file -- no signal P
+#then
+#    trim_fasta="$in_fasta"
+#fi
+trim_fasta="$in_fasta"
 
 # setup hhblits command
 export HHLIB=/software/hhsuite/build/bin/
