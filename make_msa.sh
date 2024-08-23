@@ -16,19 +16,18 @@ SCRIPT=`realpath -s $0`
 export PIPE_DIR=`dirname $SCRIPT`
 
 # sequence databases
-DB_UR30="$uniref30_path"
-DB_BFD="$bfd_path"
+DB_UR30="${uniref_path}UniRef30_2021_03"
+DB_BFD="${bfd_path}bfd_metaclust_clu_complete_id30_c90_final_seq.sorted_opt"
 
 # Running signalP 6.0
-#mkdir -p $out_dir/signalp
-#tmp_dir="$out_dir/signalp"
-#signalp6 --fastafile $in_fasta --organism other --output_dir $tmp_dir --format none --mode slow
-#trim_fasta="$tmp_dir/processed_entries.fasta"
-#if [ ! -s $trim_fasta ] # empty file -- no signal P
-#then
-#    trim_fasta="$in_fasta"
-#fi
-trim_fasta="$in_fasta"
+mkdir -p $out_dir/signalp
+tmp_dir="$out_dir/signalp"
+signalp6 --fastafile $in_fasta --organism other --output_dir $tmp_dir --format none --mode slow
+trim_fasta="$tmp_dir/processed_entries.fasta"
+if [ ! -s $trim_fasta ] # empty file -- no signal P
+then
+    trim_fasta="$in_fasta"
+fi
 
 # setup hhblits command
 export HHLIB=/software/hhsuite/build/bin/

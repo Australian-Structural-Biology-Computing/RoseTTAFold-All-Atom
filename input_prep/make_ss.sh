@@ -1,9 +1,7 @@
 #!/bin/bash
 # From: https://github.com/RosettaCommons/RoseTTAFold
 
-export BLASTMAT=/srv/scratch/z5378336/apptainers/blast-2.2.26/data/
-echo $CONDA_PREFIXi
-echo "^ Conda Prefix ^"
+export BLASTMAT="${blast_path}data"
 
 DATADIR="$CONDA_PREFIX/share/psipred_4.01/data"
 echo $DATADIR

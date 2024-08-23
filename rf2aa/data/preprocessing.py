@@ -28,7 +28,7 @@ def make_msa(
     if out_a3m.exists() and out_atab.exists() and out_hhr.exists():
         return out_a3m, out_hhr, out_atab
 
-    search_command = [command, fasta_file, str(out_dir), str(num_cpus), str(ram_gb), search_base, template_database]
-    print(' '.join(search_command))
-    _ = subprocess.run(search_command)
+    search_command = f"{command} {fasta_file} {out_dir} {num_cpus} {ram_gb} {search_base} {template_database}"
+    print(search_command)
+    _ = subprocess.run(search_command, shell=True)
     return out_a3m, out_hhr, out_atab
