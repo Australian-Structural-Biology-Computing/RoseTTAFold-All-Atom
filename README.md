@@ -1,3 +1,44 @@
+The purpose of this fork is to make RFAA more portable for adding to pipelines such as [Nextflow](https://www.nextflow.io/).
+- Databases in the .sh scripts have been modified to work with variables.
+- A RoseTTAFold-All-Atom.def file has been added. Note that this file does not include signalp due to licensing.
+
+Installation using apptainer
+---
+1. Ensure you have apptainer installed.
+2. Download the RoseTTAFold-All-Atom.def file:  
+   ```
+   wget https://raw.githubusercontent.com/Australian-Structural-Biology-Computing/RoseTTAFold-All-Atom/main/RoseTTAFold-All-Atom.def
+   ```
+4. Using apptainer build the RoseTTAFold-All-Atom.sif image. You need a GPU available; hence the --nv flag.  
+   ```
+   apptainer build --nv RoseTTAFold-All-Atom.sif RoseTTAFold-All-Atom.def
+   ```
+6. Ensure you have copies of all the databases and paper weights as listed below in the original instructions.
+
+Running RFAA within the container 
+---
+1. Copy the base.yaml to your working directory and edit it to point hhdb to your pdbd100 database and RFAA_paper_weights.pt if needed.
+2. Run apptainer as follows (replace the paths):
+```
+apptainer run --nv \
+  --env blast_path="path_to_blast/" \
+  --env bfd_path="path_to_bfd/" \
+  --env uniref30_path="path_to_UniRef30_2020_06/" \
+  RoseTTAFold-All-Atom-base.sif protein.yaml
+```
+You may need to bind your database directory, this is accomplished with the -B flag:
+```
+apptainer run --nv -B /path/to/dbs \
+  --env blast_path="path_to_blast/" \
+  --env bfd_path="path_to_bfd/" \
+  --env uniref30_path="path_to_UniRef30_2020_06/" \
+  RoseTTAFold-All-Atom-base.sif protein.yaml
+```
+*protein.yaml is the example file. You will need to create your own .yaml files for your tests.*
+
+# Original README preserved below:
+---
+
 Code for RoseTTAFold All-Atom
 --------------------
 <p align="right">
