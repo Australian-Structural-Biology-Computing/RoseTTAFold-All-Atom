@@ -18,20 +18,20 @@ Installation using apptainer
 Running RFAA within the container 
 ---
 1. Copy the base.yaml to your working directory and edit it to point hhdb to your pdbd100 database and RFAA_paper_weights.pt if needed.
-2. Run apptainer as follows (replace the paths):
+2. Run apptainer as follows (replace the paths, including your relevant db prefix):
 ```
 apptainer run --nv \
-  --env blast_path="path_to_blast/" \
-  --env bfd_path="path_to_bfd/" \
-  --env uniref30_path="path_to_UniRef30_2020_06/" \
+  --env blast_path="path_to_blast-2.2.26/data/" \
+  --env bfd_path="path_to_bfd/bfd_metaclust_clu_complete_id30_c90_final_seq.sorted_opt_" \
+  --env uniref30_path="path_to_UniRef30/UniRef30_2021_03" \
   RoseTTAFold-All-Atom-base.sif protein.yaml
 ```
 You may need to bind your database directory, this is accomplished with the -B flag:
 ```
 apptainer run --nv -B /path/to/dbs \
-  --env blast_path="path_to_blast/" \
-  --env bfd_path="path_to_bfd/" \
-  --env uniref30_path="path_to_UniRef30_2020_06/" \
+  --env blast_path="path_to_blast-2.2.26/data/" \
+  --env bfd_path="path_to_bfd/bfd_metaclust_clu_complete_id30_c90_final_seq.sorted_opt_" \
+  --env uniref30_path="path_to_UniRef30/UniRef30_2021_03" \
   RoseTTAFold-All-Atom-base.sif protein.yaml
 ```
 *protein.yaml is the example file. You will need to create your own .yaml files for your tests.*
