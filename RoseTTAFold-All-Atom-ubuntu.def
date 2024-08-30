@@ -1,12 +1,12 @@
 Bootstrap: docker
-From: nvidia/cuda:12.6.0-base-rockylinux9
+From: nvidia/cuda:12.6.0-cudnn-devel-ubuntu24.04 
 
 %labels
     Author j.caley@unsw.edu.au
     Version 0.1.8
 
 %post
-    dnf update -y && dnf install -y wget git
+    apt update && DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends -y wget git
 
     wget "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh"
     bash Mambaforge-Linux-x86_64.sh -b -p /opt/mambaforge
@@ -23,8 +23,8 @@ From: nvidia/cuda:12.6.0-base-rockylinux9
     python rf2aa/SE3Transformer/setup.py install && \
     bash install_dependencies.sh' 
 
-    dnf remove -y wget git && dnf clean all -y
-    rm -rf /var/cache/df /root/.cache
+    apt autoremove -y && apt remove --purge -y wget git && apt clean -y
+    rm -rf /var/lib/apt/lists/* /root/.cache
     mamba clean --all --force-pkgs-dirs -y
     rm -r *.tar.gz
     chmod 755 input_prep/make_ss.sh
