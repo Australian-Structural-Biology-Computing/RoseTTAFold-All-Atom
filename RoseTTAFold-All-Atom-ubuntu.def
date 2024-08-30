@@ -3,7 +3,7 @@ From: nvidia/cuda:12.6.0-cudnn-devel-ubuntu24.04
 
 %labels
     Author j.caley@unsw.edu.au
-    Version 0.1.8
+    Version 0.2.0
 
 %post
     apt update && DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends -y wget git
@@ -18,15 +18,13 @@ From: nvidia/cuda:12.6.0-cudnn-devel-ubuntu24.04
     cd RoseTTAFold-All-Atom
     mamba env create -f environment.yaml
 
-    mamba run -n RFAA bash -c '\
-    pip install --no-cache-dir -r rf2aa/SE3Transformer/requirements.txt && \
-    python rf2aa/SE3Transformer/setup.py install && \
+    mamba run -n RFAA \
+    'python rf2aa/SE3Transformer/setup.py install && \
     bash install_dependencies.sh' 
 
     apt autoremove -y && apt remove --purge -y wget git && apt clean -y
-    rm -rf /var/lib/apt/lists/* /root/.cache
+    rm -rf /var/lib/apt/lists/* /root/.cache *.tar.gz
     mamba clean --all --force-pkgs-dirs -y
-    rm -r *.tar.gz
     chmod 755 input_prep/make_ss.sh
 
 %environment
