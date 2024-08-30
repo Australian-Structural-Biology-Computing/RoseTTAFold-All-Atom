@@ -19,8 +19,8 @@ From: nvidia/cuda:12.6.0-cudnn-devel-ubuntu24.04
     mamba env create -f environment.yaml
 
     mamba run -n RFAA \
-    'python rf2aa/SE3Transformer/setup.py install && \
-    bash install_dependencies.sh' 
+        'python rf2aa/SE3Transformer/setup.py install && \
+        bash install_dependencies.sh' 
 
     apt autoremove -y && apt remove --purge -y wget git && apt clean -y
     rm -rf /var/lib/apt/lists/* /root/.cache *.tar.gz
