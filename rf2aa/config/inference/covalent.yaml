@@ -1,5 +1,6 @@
 defaults:
   - base
+  - _self_
 
 job_name: 7s69_A
 
