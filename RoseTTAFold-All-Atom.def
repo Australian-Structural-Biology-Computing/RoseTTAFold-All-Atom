@@ -3,15 +3,15 @@ From: nvidia/cuda:12.6.0-base-rockylinux9
 
 %labels
     Author j.caley@unsw.edu.au
-    Version 0.2.0
+    Version 0.2.1
 
 %post
     dnf update -y && dnf install -y wget git
 
-    wget "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh"
-    bash Mambaforge-Linux-x86_64.sh -b -p /opt/mambaforge
-    rm Mambaforge-Linux-x86_64.sh
-    export PATH="/opt/mambaforge/bin:$PATH"
+    wget "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge-Linux-x86_64.sh"
+    bash Miniforge-Linux-x86_64.sh -b -p /opt/miniforge
+    rm Miniforge-Linux-x86_64.sh
+    export PATH="/opt/miniforge/bin:$PATH"
     mamba init
 
     git clone --depth 1 https://github.com/Australian-Structural-Biology-Computing/RoseTTAFold-All-Atom.git
@@ -29,7 +29,7 @@ From: nvidia/cuda:12.6.0-base-rockylinux9
 
 %environment
     export PYTHONPATH="/RoseTTAFold-All-Atom:$PYTHONPATH"
-    export PATH="/opt/mambaforge/bin:/RoseTTAFold-All-Atom:$PATH"
+    export PATH="/opt/miniforge/bin:/RoseTTAFold-All-Atom:$PATH"
 
 %runscript
     mamba run --name RFAA python -m rf2aa.run_inference --config-name "$@"
