@@ -28,8 +28,8 @@ From: nvidia/cuda:12.6.0-cudnn-devel-ubuntu24.04
     chmod 755 input_prep/make_ss.sh
 
 %environment
-    export PYTHONPATH="/RoseTTAFold-All-Atom:$PYTHONPATH"
-    export PATH="/opt/miniforge/bin:/RoseTTAFold-All-Atom:$PATH"
+    export PYTHONPATH="/app/RoseTTAFold-All-Atom:$PYTHONPATH"
+    export PATH="/opt/miniforge/bin:/app/RoseTTAFold-All-Atom:$PATH"
 
 %runscript
     mamba run --name RFAA python -m rf2aa.run_inference --config-name "$@"
