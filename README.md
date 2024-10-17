@@ -9,9 +9,9 @@ Installation using apptainer
    ```
    wget https://raw.githubusercontent.com/Australian-Structural-Biology-Computing/RoseTTAFold-All-Atom/main/RoseTTAFold-All-Atom.def
    ```
-4. Using apptainer build the RoseTTAFold-All-Atom.sif image. You need a GPU available; hence the --nv flag.  
+4. Using apptainer build the RoseTTAFold-All-Atom.sif image.
    ```
-   apptainer build --nv RoseTTAFold-All-Atom.sif RoseTTAFold-All-Atom.def
+   apptainer build RoseTTAFold-All-Atom.sif RoseTTAFold-All-Atom.def
    ```
 6. Ensure you have copies of all the databases and paper weights as listed below in the original instructions.
 
