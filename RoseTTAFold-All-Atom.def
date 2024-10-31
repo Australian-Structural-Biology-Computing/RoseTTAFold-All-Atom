@@ -3,7 +3,7 @@ From: nvidia/cuda:12.6.0-base-rockylinux9
 
 %labels
     Author j.caley@unsw.edu.au
-    Version 0.2.2
+    Version 0.2.3
 
 %post
     dnf update -y && dnf install -y wget git
@@ -22,14 +22,22 @@ From: nvidia/cuda:12.6.0-base-rockylinux9
         'python rf2aa/SE3Transformer/setup.py install && \
         bash install_dependencies.sh' 
 
-    dnf remove -y wget git && dnf clean all -y
-    rm -rf /var/cache/df /root/.cache *.tar.gz
+    wget https://ftp.ncbi.nlm.nih.gov/blast/executables/legacy.NOTSUPPORTED/2.2.26/blast-2.2.26-x64-linux.tar.gz
+    mkdir -p blast-2.2.26
+    tar -xf blast-2.2.26-x64-linux.tar.gz -C blast-2.2.26
+    cp -r blast-2.2.26/blast-2.2.26/ blast-2.2.26_bk
+    rm -r blast-2.2.26
+    mv blast-2.2.26_bk/ blast-2.2.26
+
+    apt autoremove -y && apt remove --purge -y wget git && apt clean -y
+    rm -rf /var/lib/apt/lists/* /root/.cache *.tar.gz
     mamba clean --all --force-pkgs-dirs -y
     chmod 755 input_prep/make_ss.sh
 
 %environment
     export PYTHONPATH="/app/RoseTTAFold-All-Atom:$PYTHONPATH"
     export PATH="/opt/miniforge/bin:/app/RoseTTAFold-All-Atom:$PATH"
+    export DGLBACKEND="pytorch"
 
 %runscript
     mamba run --name RFAA python -m rf2aa.run_inference --config-name "$@"
