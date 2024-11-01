@@ -13,7 +13,8 @@ DB_TEMPL="$5"
 
 # current script directory (i.e., pipe directory)
 SCRIPT=`realpath -s $0`
-export PIPE_DIR=`dirname $SCRIPT`
+#export PIPE_DIR=`dirname $SCRIPT`
+export PIPE_DIR="$PWD"
 
 # sequence databases
 DB_UR30="$PIPE_DIR/UniRef30_2020_06/UniRef30_2020_06"
