@@ -9,9 +9,9 @@ class DistanceNetwork(nn.Module):
         #HACK: dimensions are hard coded here
         self.proj_symm = nn.Linear(n_feat, 61+37) # must match bin counts defined in kinematics.py
         self.proj_asymm = nn.Linear(n_feat, 37+19)
-    
+
         self.reset_parameter()
-    
+
     def reset_parameter(self):
         # initialize linear layer for final logit prediction
         nn.init.zeros_(self.proj_symm.weight)
@@ -42,9 +42,9 @@ class MaskedTokenNetwork(nn.Module):
         #fd note this predicts probability for the mask token (which is never in ground truth)
         #   it should be ok though(?)
         self.proj = nn.Linear(n_feat, ChemData().NAATOKENS)
-        
+
         self.reset_parameter()
-    
+
     def reset_parameter(self):
         nn.init.zeros_(self.proj.weight)
         nn.init.zeros_(self.proj.bias)

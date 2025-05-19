@@ -40,12 +40,12 @@ def get_prot_sm_mask(atom_mask, seq):
     """
     Parameters
     ----------
-    atom_mask : (..., L, Natoms) 
-    seq : (L) 
+    atom_mask : (..., L, Natoms)
+    seq : (L)
 
     Returns
     -------
-    mask : (..., L) 
+    mask : (..., L)
     """
     sm_mask = is_atom(seq).to(atom_mask.device) # (L)
     # Asserting that atom_mask is full for masked regions of proteins [should be]
@@ -75,7 +75,7 @@ def center_and_realign_missing(xyz, mask_t, seq=None, same_chain=None, should_ce
     Returns
     -------
     xyz : (L, Natms, 3)
-    
+
     """
     L = xyz.shape[0]
 
@@ -101,7 +101,7 @@ def center_and_realign_missing(xyz, mask_t, seq=None, same_chain=None, should_ce
     seqmap = torch.argmin(seqmap, dim=-1) # (L)
     idx = torch.gather(exist_in_xyz, 0, seqmap) # (L)
     offset_CA = torch.gather(xyz[:,1], 0, idx.reshape(L,1).expand(-1,3))
-    has_neighbor = same_chain_in_xyz.all(-1) 
+    has_neighbor = same_chain_in_xyz.all(-1)
     offset_CA[~has_neighbor] = 0 # stay at origin if nothing on same chain has coords
     xyz = torch.where(mask.view(L, 1, 1), xyz, xyz + offset_CA.reshape(L,1,3))
 
@@ -184,7 +184,7 @@ def xyz_to_frame_xyz(xyz, seq_unmasked, atom_frames):
     xyz (1, L, natoms, 3)
     seq_unmasked (1, L)
     atom_frames (1, L, 3, 2)
-    """ 
+    """
     xyz_frame = xyz.clone()
     atoms = is_atom(seq_unmasked)
     if torch.all(~atoms):
@@ -193,7 +193,7 @@ def xyz_to_frame_xyz(xyz, seq_unmasked, atom_frames):
     atom_crds = xyz_frame[atoms]
     atom_L, natoms, _ = atom_crds.shape
     frames_reindex = torch.zeros(atom_frames.shape[:-1])
-    
+
     for i in range(atom_L):
         frames_reindex[:, i, :] = (i+atom_frames[..., i, :, 0])*natoms + atom_frames[..., i, :, 1]
     frames_reindex = frames_reindex.long()
@@ -215,7 +215,7 @@ def xyz_frame_from_rotation_mask(xyz,rotation_mask, atom_frames):
     atom_crds = xyz_frame[rotation_mask]
     atom_L, natoms, _ = atom_crds.shape
     frames_reindex = torch.zeros(atom_frames.shape[:-1])
-    
+
     for i in range(atom_L):
         frames_reindex[:, i, :] = (i+atom_frames[..., i, :, 0])*natoms + atom_frames[..., i, :, 1]
     frames_reindex = frames_reindex.long()
@@ -244,7 +244,7 @@ def xyz_t_to_frame_xyz_sm_mask(xyz_t, is_sm, atom_frames):
 	xyz_t_frame (B, T, L, natoms, 3)
     """
     # ic(xyz_t.shape, is_sm.shape, atom_frames.shape)
-    # xyz_t.shape: torch.Size([1, 1, 194, 36, 3]) 
+    # xyz_t.shape: torch.Size([1, 1, 194, 36, 3])
     # is_sm.shape: torch.Size([194])
     # atom_frames.shape: torch.Size([1, 29, 3, 2])
     xyz_t_frame = xyz_t.clone()
@@ -290,16 +290,16 @@ def get_tips(xyz, seq):
         b = Ca - N
         c = C - Ca
         a = torch.cross(b, c, dim=-1)
-        Cb = -0.58273431*a + 0.56802827*b - 0.54067466*c + Ca    
+        Cb = -0.58273431*a + 0.56802827*b - 0.54067466*c + Ca
 
         xyz_tips = torch.where(torch.isnan(xyz_tips), Cb, xyz_tips)
     return xyz_tips
 
 def superimpose(pred, true, atom_mask):
-    
+
     def centroid(X):
         return X.mean(dim=-2, keepdim=True)
-    
+
     B, L, natoms = pred.shape[:3]
 
     # center to centroid
@@ -308,7 +308,7 @@ def superimpose(pred, true, atom_mask):
 
     cp = centroid(pred_allatom)
     ct = centroid(true_allatom)
-    
+
     pred_allatom_origin = pred_allatom - cp
     true_allatom_origin = true_allatom - ct
 
@@ -326,17 +326,17 @@ def superimpose(pred, true, atom_mask):
     U = torch.matmul(d*V, W.permute(0,2,1)) # (IB, 3, 3)
     pred_rms = pred - cp
     true_rms = true - ct
-    
+
     # Rotate pred
     rP = torch.matmul(pred_rms, U) # (IB, L*3, 3)
-    
+
     return rP+ct
 
 def writepdb(filename, *args, file_mode='w', **kwargs, ):
     f = open(filename, file_mode)
     writepdb_file(f, *args, **kwargs)
 
-def writepdb_file(f, atoms, seq, modelnum=None, chain="A", idx_pdb=None, bfacts=None, 
+def writepdb_file(f, atoms, seq, modelnum=None, chain="A", idx_pdb=None, bfacts=None,
              bond_feats=None, file_mode="w",atom_mask=None, atom_idx_offset=0, chain_Ls=None,
              remap_atomtype=True, lig_name='LG1', atom_names=None):
 
@@ -350,20 +350,20 @@ def writepdb_file(f, atoms, seq, modelnum=None, chain="A", idx_pdb=None, bfacts=
     # if needed, correct mistake in atomic number assignment in RF2-allatom (fold&dock 3 & earlier)
     atom_names_ = [
         "F",  "Cl", "Br", "I",  "O",  "S",  "Se", "Te", "N",  "P",  "As", "Sb",
-        "C",  "Si", "Ge", "Sn", "Pb", "B",  "Al", "Zn", "Hg", "Cu", "Au", "Ni", 
-        "Pd", "Pt", "Co", "Rh", "Ir", "Pr", "Fe", "Ru", "Os", "Mn", "Re", "Cr", 
+        "C",  "Si", "Ge", "Sn", "Pb", "B",  "Al", "Zn", "Hg", "Cu", "Au", "Ni",
+        "Pd", "Pt", "Co", "Rh", "Ir", "Pr", "Fe", "Ru", "Os", "Mn", "Re", "Cr",
         "Mo", "W",  "V",  "U",  "Tb", "Y",  "Be", "Mg", "Ca", "Li", "K",  "ATM"]
     atom_num = [
         9,    17,   35,   53,   8,    16,   34,   52,   7,    15,   33,   51,
         6,    14,   32,   50,   82,   5,    13,   30,   80,   29,   79,   28,
-        46,   78,   27,   45,   77,   59,   26,   44,   76,   25,   75,   24,   
-        42,   74,   23,   92,   65,   39,   4,    12,   20,   3,    19,   0] 
+        46,   78,   27,   45,   77,   59,   26,   44,   76,   25,   75,   24,
+        42,   74,   23,   92,   65,   39,   4,    12,   20,   3,    19,   0]
     atomnum2atomtype_ = dict(zip(atom_num,atom_names_))
     if remap_atomtype:
         atomtype_map = {v:atomnum2atomtype_[k] for k,v in ChemData().atomnum2atomtype.items()}
     else:
         atomtype_map = {v:v for k,v in ChemData().atomnum2atomtype.items()} # no change
-        
+
     ctr = 1+atom_idx_offset
     scpu = seq.cpu().squeeze(0)
     atomscpu = atoms.cpu().squeeze(0)
@@ -514,7 +514,7 @@ def get_atom_frames(msa, G, **karg):
                 frame_priorities.append(sorted([ChemData().atom2frame_priority[aa] for aa in aas]))
 
 
-            
+
         # np.argsort doesn't sort tuples correctly so just sort a list of indices using a key
         sorted_indices = sorted(range(len(frame_priorities)), key=lambda i: frame_priorities[i])
         # calculate residue offset for frame
@@ -525,7 +525,7 @@ def get_atom_frames(msa, G, **karg):
 
 
 ### Generate bond features for small molecules ###
-def get_bond_feats(mol):                                                                                 
+def get_bond_feats(mol):
     """creates 2d bond graph for small molecules"""
     N = mol.NumAtoms()
     bond_feats = torch.zeros((N, N)).long()
@@ -555,8 +555,8 @@ def get_protein_bond_feats_from_idx(protein_L, idx_protein):
     return bond_feats
 
 def get_atomize_protein_bond_feats(i_start, msa, ra, n_res_atomize=5):
-    """ 
-    generate atom bond features for atomized residues 
+    """
+    generate atom bond features for atomized residues
     currently ignores long-range bonds like disulfides
     """
     ra2ind = {}
@@ -630,14 +630,14 @@ def atomize_protein(i_start, msa, xyz, mask, n_res_atomize=5):
     bond_feats = get_atomize_protein_bond_feats(i_start, msa, ra, n_res_atomize=n_res_atomize)
     #HACK: use networkx graph to make the atom frames, correct implementation will include frames with "residue atoms"
     G = nx.from_numpy_array(bond_feats.numpy())
-        
+
     frames = get_atom_frames(lig_seq, G)
     chirals = get_atomize_protein_chirals(residues_atomize, lig_xyz[0], residue_atomize_allatom_mask, bond_feats)
     return lig_seq, ins, lig_xyz, lig_mask, frames, bond_feats, ra, chirals
 
 def atomize_discontiguous_residues(idxs, msa, xyz, mask, bond_feats, same_chain, dslfs=None):
     """
-    this atomizes multiple discontiguous residues at the same time, this is the default interface into atomizing residues 
+    this atomizes multiple discontiguous residues at the same time, this is the default interface into atomizing residues
     (using the non assembly dataset)
     """
     protein_L = msa.shape[1]
@@ -676,18 +676,18 @@ def atomize_discontiguous_residues(idxs, msa, xyz, mask, bond_feats, same_chain,
         N_term = idx ==  0
         C_term = idx == protein_L-1
 
-        # update bond_feats every iteration, update all other features at the end 
+        # update bond_feats every iteration, update all other features at the end
         bond_feats_new = torch.zeros((L+natoms, L+natoms))
         bond_feats_new[:L, :L] = bond_feats
         bond_feats_new[L:, L:] = bond_feats_atomize
         # add bond between protein and atomized N
         if not N_term and idx-1 not in idxs:
-            bond_feats_new[idx-1, L] = 6 # protein (backbone)-atom bond 
-            bond_feats_new[L, idx-1] = 6 # protein (backbone)-atom bond 
+            bond_feats_new[idx-1, L] = 6 # protein (backbone)-atom bond
+            bond_feats_new[L, idx-1] = 6 # protein (backbone)-atom bond
         # add bond between protein and C, assumes every residue is being atomized one at a time (eg n_res_atomize=1)
         if not C_term and idx+1 not in idxs:
-            bond_feats_new[idx+1, L+int(last_C.numpy())] = 6 # protein (backbone)-atom bond 
-            bond_feats_new[L+int(last_C.numpy()), idx+1] = 6 # protein (backbone)-atom bond 
+            bond_feats_new[idx+1, L+int(last_C.numpy())] = 6 # protein (backbone)-atom bond
+            bond_feats_new[L+int(last_C.numpy()), idx+1] = 6 # protein (backbone)-atom bond
         # handle drawing peptide bond between contiguous atomized residues
         if idx-1 in idxs:
             if prev_C_index is None:
@@ -721,12 +721,12 @@ def atomize_discontiguous_residues(idxs, msa, xyz, mask, bond_feats, same_chain,
     ins_atomize_all = torch.cat(ins_atomize_all)
     xyz_atomize_all = cartprodcat(xyz_atomize_all)
     mask_atomize_all = cartprodcat(mask_atomize_all)
-    
+
     # frames were calculated per residue -- we want them over all residues in case there are contiguous residues
     bond_feats_sm = bond_feats[protein_L:][:, protein_L:]
     G = nx.from_numpy_array(bond_feats_sm.detach().cpu().numpy())
     frames_atomize_all = get_atom_frames(seq_atomize_all, G)
-    
+
     # frames_atomize_all = torch.cat(frames_atomize_all)
     chirals_atomize_all = torch.cat(chirals_atomize_all)
 
@@ -736,7 +736,7 @@ def atomize_discontiguous_residues(idxs, msa, xyz, mask, bond_feats, same_chain,
 def reindex_protein_feats_after_atomize(
     residues_to_atomize,
     prot_partners,
-    msa, 
+    msa,
     ins,
     xyz,
     mask,
@@ -748,7 +748,7 @@ def reindex_protein_feats_after_atomize(
     same_chain,
     ch_label,
     Ls_prot,
-    Ls_sm, 
+    Ls_sm,
     akeys_sm,
     remove_residue=True
 ):
@@ -922,7 +922,7 @@ def map_identical_prot_chains(partners, chains, modres):
     """Identifies which chain letters represent unique protein sequences,
     assigns a number to each unique sequence, and returns dicts mapping sequence
     numbers to chain letters and vice versa.
-    
+
     Parameters
     ----------
     partners : list of tuples (partner, transform_index, num_contacts, partner_type)
@@ -960,7 +960,7 @@ def map_identical_prot_chains(partners, chains, modres):
     chnum2chlet = OrderedDict([(i,v) for i,(k,v) in enumerate(seq2chlet.items())])
     #chlet2chnum = OrderedDict([(chlet,chnum) for chnum,chlet_s in chnum2chlet.items() for chlet in chlet_s])
 
-    return chnum2chlet 
+    return chnum2chlet
 
 def cartprodcat(X_s):
     """Concatenate list of tensors on dimension 1 while taking their cartesian product
@@ -978,7 +978,7 @@ def cartprodcat(X_s):
     return X
 
 def idx_from_Ls(Ls):
-    """Generate residue indexes from a list of chain lengths, 
+    """Generate residue indexes from a list of chain lengths,
     with a chain gap offset between indexes for each chain."""
     idx = []
     offset = 0
@@ -1040,5 +1040,3 @@ def kabsch(xyz1, xyz2, eps=1e-6):
     rmsd = torch.sqrt(torch.sum((xyz2_-xyz1)*(xyz2_-xyz1), axis=(0,1)) / L + eps)
 
     return rmsd, U
-
-

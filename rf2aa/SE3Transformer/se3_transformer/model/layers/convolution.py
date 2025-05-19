@@ -163,7 +163,7 @@ class VersatileConvSE3(nn.Module):
                 else:
                     # k = l = 0 non-fused case
                     retval = radial_weights @ features
-                    
+
             else:
                 #fd reduce memory in inference
                 EDGESTRIDE = 65536 #16384
@@ -175,8 +175,8 @@ class VersatileConvSE3(nn.Module):
                     out_dim = features.shape[-1]
 
                 retval = torch.zeros(
-                    (num_edges, self.channels_out, out_dim), 
-                    dtype=features.dtype, 
+                    (num_edges, self.channels_out, out_dim),
+                    dtype=features.dtype,
                     device=features.device
                 )
 

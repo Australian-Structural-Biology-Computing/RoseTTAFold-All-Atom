@@ -27,17 +27,17 @@ class RawInputData:
 
     def query_sequence(self):
         return self.msa[0]
-    
+
     def sequence_string(self):
         three_letter_sequence  = [ChemData().num2aa[num] for num in self.query_sequence()]
         return "".join([ChemData().aa_321[three] for three in three_letter_sequence])
-    
+
     def is_atom(self):
         return is_atom(self.query_sequence())
 
     def length(self):
-        return self.msa.shape[1] 
-    
+        return self.msa.shape[1]
+
     def get_chain_bins_from_chain_lengths(self):
         if self.chain_lengths is None:
             raise ValueError("Cannot call get_chain_bins_from_chain_lengths without \
@@ -48,7 +48,7 @@ class RawInputData:
             chain_bins[chain] = (running_length, running_length+length)
             running_length = running_length + length
         return chain_bins
-    
+
     def update_protein_features_after_atomize(self, residues_to_atomize):
         if self.chain_lengths is None:
             raise("Cannot update protein features without chain_lengths. \
@@ -70,13 +70,13 @@ class RawInputData:
             if absolute_index_in_combined_input != original_chain_start_index:
                 self.bond_feats[absolute_index_in_combined_input-1, N_index] = ChemData().RESIDUE_ATOM_BOND
                 self.bond_feats[N_index, absolute_index_in_combined_input-1] = ChemData().RESIDUE_ATOM_BOND
-            
+
             # if residue is last in chain, no extra bonds feats to following residue
             if absolute_index_in_combined_input != original_chain_end_index-1:
                 self.bond_feats[absolute_index_in_combined_input+1, C_index] = ChemData().RESIDUE_ATOM_BOND
                 self.bond_feats[C_index,absolute_index_in_combined_input+1] = ChemData().RESIDUE_ATOM_BOND
             keep[absolute_index_in_combined_input] = 0
-            
+
             # find neighboring residues that were atomized
             if prev_absolute_index is not None:
                 if prev_absolute_index + 1  == absolute_index_in_combined_input:
@@ -85,7 +85,7 @@ class RawInputData:
 
             prev_absolute_index = absolute_index_in_combined_input
             prev_C = C_index
-        # remove protein features 
+        # remove protein features
         self.keep_features(keep.bool())
 
     def keep_features(self, keep):
@@ -122,10 +122,10 @@ class RawInputData:
 
         # NOTE: The above is the way things "should" be done, this is for compatability with training.
         xyz_prev = ChemData().INIT_CRDS.reshape(1,ChemData().NTOTAL,3).repeat(L,1,1)
-        
+
         self.xyz_t = torch.nan_to_num(self.xyz_t)
 
-        mask_t_2d = get_prot_sm_mask(self.mask_t, seq[0]) 
+        mask_t_2d = get_prot_sm_mask(self.mask_t, seq[0])
         mask_t_2d = mask_t_2d[:,None]*mask_t_2d[:,:,None] # (B, T, L, L)
 
         xyz_t_frame = xyz_t_to_frame_xyz(self.xyz_t[None], self.msa[0], self.atom_frames)
@@ -133,7 +133,7 @@ class RawInputData:
         t2d = t2d[0]
         # get torsion angles from templates
         seq_tmp = self.t1d[...,:-1].argmax(dim=-1)
-        alpha, _, alpha_mask, _ = model_runner.xyz_converter.get_torsions(self.xyz_t.reshape(-1,L,ChemData().NTOTAL,3), 
+        alpha, _, alpha_mask, _ = model_runner.xyz_converter.get_torsions(self.xyz_t.reshape(-1,L,ChemData().NTOTAL,3),
                                 seq_tmp, mask_in=self.mask_t.reshape(-1,L,ChemData().NTOTAL))
         alpha = alpha.reshape(B,-1,L,ChemData().NTOTALDOFS,2)
         alpha_mask = alpha_mask.reshape(B,-1,L,ChemData().NTOTALDOFS,1)
@@ -192,11 +192,10 @@ class RFInput:
             field_value = getattr(self, field.name)
             if torch.is_tensor(field_value):
                 setattr(self, field.name, field_value.to(gpu))
-    
+
     def add_batch_dim(self):
         """ mimic pytorch dataloader at inference time"""
         for field in fields(self):
             field_value = getattr(self, field.name)
             if torch.is_tensor(field_value):
                 setattr(self, field.name, field_value[None])
-

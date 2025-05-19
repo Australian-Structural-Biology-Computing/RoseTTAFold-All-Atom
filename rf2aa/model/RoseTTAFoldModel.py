@@ -28,40 +28,40 @@ def get_shape(t):
 
 class RoseTTAFoldModule(nn.Module):
     def __init__(
-        self, 
-        symmetrize_repeats=None,       # whether to symmetrize repeats in the pair track 
-        repeat_length=None,            # if symmetrizing repeats, what length are they? 
+        self,
+        symmetrize_repeats=None,       # whether to symmetrize repeats in the pair track
+        repeat_length=None,            # if symmetrizing repeats, what length are they?
         symmsub_k=None,                # if symmetrizing repeats, which diagonals?
-        sym_method=None,               # if symmetrizing repeats, which block symmetrization method? 
+        sym_method=None,               # if symmetrizing repeats, which block symmetrization method?
         main_block=None,               # if copying template blocks along main diag, which block is main block? (the one w/ motif)
         copy_main_block_template=None, # whether or not to copy main block template along main diag
-        n_extra_block=4, 
-        n_main_block=8, 
-        n_ref_block=4, 
+        n_extra_block=4,
+        n_main_block=8,
+        n_ref_block=4,
         n_finetune_block=0,
-        d_msa=256, 
-        d_msa_full=64, 
-        d_pair=128, 
+        d_msa=256,
+        d_msa_full=64,
+        d_pair=128,
         d_templ=64,
-        n_head_msa=8, 
-        n_head_pair=4, 
+        n_head_msa=8,
+        n_head_pair=4,
         n_head_templ=4,
-        d_hidden=32, 
+        d_hidden=32,
         d_hidden_templ=64,
         d_t1d=0,
         p_drop=0.15,
         additional_dt1d=0,
         recycling_type="msa_pair",
         SE3_param={}, SE3_ref_param={},
-        atom_type_index=None, 
-        aamask=None, 
-        ljlk_parameters=None, 
-        lj_correction_parameters=None, 
-        cb_len=None, 
-        cb_ang=None, 
+        atom_type_index=None,
+        aamask=None,
+        ljlk_parameters=None,
+        lj_correction_parameters=None,
+        cb_len=None,
+        cb_ang=None,
         cb_tor=None,
-        num_bonds=None, 
-        lj_lin=0.6, 
+        num_bonds=None,
+        lj_lin=0.6,
         use_chiral_l1=True,
         use_lj_l1=False,
         use_atom_frames=True,
@@ -93,16 +93,16 @@ class RoseTTAFoldModule(nn.Module):
 
         self.templ_emb = Templ_emb(d_t1d=d_t1d,
                                    d_pair=d_pair,
-                                   d_templ=d_templ, 
-                                   d_state=d_state, 
+                                   d_templ=d_templ,
+                                   d_state=d_state,
                                    n_head=n_head_templ,
-                                   d_hidden=d_hidden_templ, 
+                                   d_hidden=d_hidden_templ,
                                    p_drop=0.25,
-                                   symmetrize_repeats=symmetrize_repeats, # repeat protein stuff 
-                                   repeat_length=repeat_length, 
+                                   symmetrize_repeats=symmetrize_repeats, # repeat protein stuff
+                                   repeat_length=repeat_length,
                                    symmsub_k=symmsub_k,
-                                   sym_method=sym_method, 
-                                   main_block=main_block, 
+                                   sym_method=sym_method,
+                                   main_block=main_block,
                                    copy_main_block=copy_main_block_template,
                                    additional_dt1d=additional_dt1d)
 
@@ -176,7 +176,7 @@ class RoseTTAFoldModule(nn.Module):
         idx,
         bond_feats,
         dist_matrix,
-        chirals, 
+        chirals,
         atom_frames=None, t1d=None, t2d=None, xyz_t=None, alpha_t=None, mask_t=None, same_chain=None,
         msa_prev=None, pair_prev=None, state_prev=None, mask_recycle=None, is_motif=None,
         return_raw=False,
@@ -209,7 +209,7 @@ class RoseTTAFoldModule(nn.Module):
         B, N, L = msa_latent.shape[:3]
         A = atom_frames.shape[1]
         dtype = msa_latent.dtype
-        
+
         if self.assert_single_sequence_input:
             assert_shape(msa_latent, (1, 1, L, 164))
             assert_shape(msa_full, (1, 1, L, 83))
@@ -368,8 +368,8 @@ class RoseTTAFoldModule(nn.Module):
         msa, pair, xyz, alpha_s, xyz_allatom, state, symmsub, quat = self.simulator(
             seq_unmasked, msa_latent, msa_full, pair, xyz[:,:,:3], state, idx,
             symmids, symmsub, symmRs, symmmeta,
-            bond_feats, dist_matrix, same_chain, chirals, is_motif, atom_frames, 
-            use_checkpoint=use_checkpoint, use_atom_frames=self.use_atom_frames, 
+            bond_feats, dist_matrix, same_chain, chirals, is_motif, atom_frames,
+            use_checkpoint=use_checkpoint, use_atom_frames=self.use_atom_frames,
             p2p_crop=p2p_crop, topk_crop=topk_crop
         )
 
@@ -400,7 +400,7 @@ class RoseTTAFoldModule(nn.Module):
 
         logits_pae = logits_pde = p_bind = None
         # predict aligned error and distance error
-        logits_pae = self.pae_pred(pair)        
+        logits_pae = self.pae_pred(pair)
         logits_pde = self.pde_pred(pair + pair.permute(0,2,1,3)) # symmetrize pair features
 
         #fd  predict bind/no-bind
@@ -408,11 +408,11 @@ class RoseTTAFoldModule(nn.Module):
 
         if self.get_quaternion:
             return (
-            logits, logits_aa, logits_pae, logits_pde, p_bind, 
+            logits, logits_aa, logits_pae, logits_pde, p_bind,
             xyz, alpha_s, xyz_allatom, lddt, msa[:,0], pair, state, quat
             )
         else:
             return (
-                logits, logits_aa, logits_pae, logits_pde, p_bind, 
+                logits, logits_aa, logits_pae, logits_pde, p_bind,
                 xyz, alpha_s, xyz_allatom, lddt, msa[:,0], pair, state
             )

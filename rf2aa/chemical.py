@@ -101,7 +101,7 @@ class ChemicalData:
         self.NTOTALDOFS = self.NTOTALTORS+self.NPROTANGS
 
         #bond types
-        self.num2btype = [0,1,2,3,4,5,6,7] # UNK, SINGLE, DOUBLE, TRIPLE, AROMATIC, 
+        self.num2btype = [0,1,2,3,4,5,6,7] # UNK, SINGLE, DOUBLE, TRIPLE, AROMATIC,
                                            # PEPTIDE/NA BACKBONE, PROTEIN-LIGAND (PEPTIDE), OTHER
         self.NBTYPES = len(self.num2btype)
 
@@ -140,17 +140,17 @@ class ChemicalData:
         self.aa_321 = {a:b for a,b in zip(self.num2aa,self.one_letter+['a']*self.n_non_protein)}
 
         self.frame_priority2atom = [
-            "F",  "Cl", "Br", "I",  "O",  "S",  "Se", "Te", "N",  "P",  "As", "Sb", 
-            "C",  "Si", "Sn", "Pb", "B",  "Al", "Zn", "Hg", "Cu", "Au", "Ni", "Pd", 
-            "Pt", "Co", "Rh", "Ir", "Pr", "Fe", "Ru", "Os", "Mn", "Re", "Cr", "Mo", 
+            "F",  "Cl", "Br", "I",  "O",  "S",  "Se", "Te", "N",  "P",  "As", "Sb",
+            "C",  "Si", "Sn", "Pb", "B",  "Al", "Zn", "Hg", "Cu", "Au", "Ni", "Pd",
+            "Pt", "Co", "Rh", "Ir", "Pr", "Fe", "Ru", "Os", "Mn", "Re", "Cr", "Mo",
             "W",  "V",  "U",  "Tb", "Y",  "Be", "Mg", "Ca", "Li", "K",  "ATM"]
 
-        # these atomic numbers are incorrect, but keeping for fold&dock3 and correcting it 
+        # these atomic numbers are incorrect, but keeping for fold&dock3 and correcting it
         # in util.writepdb() during output.
         self.atom_num= [
-            9,    17,   35,   53,   8,    16,   34,   52,   7,    15,   33,   51, 
-            6,    14,   32,   50,   82,   5,    13,   30,   80,   29,   79,   28, 
-            46,   78,   27,   45,   77,   26,   44,   76,   25,   75,   24,   42, 
+            9,    17,   35,   53,   8,    16,   34,   52,   7,    15,   33,   51,
+            6,    14,   32,   50,   82,   5,    13,   30,   80,   29,   79,   28,
+            46,   78,   27,   45,   77,   26,   44,   76,   25,   75,   24,   42,
             23,   74,   92,   65,   39,   4,    12,   20,   3,    19,   0] # in same order as frame priority
 
         self.atom2frame_priority = {x:i for i,x in enumerate(self.frame_priority2atom)}
@@ -166,7 +166,7 @@ class ChemicalData:
             "A":'b', "C":'d', "G":'h', "U":'u',
         }
 
-        # this is taken from a query string for a link named "metals in PDB" on BioLiP website 
+        # this is taken from a query string for a link named "metals in PDB" on BioLiP website
         # hopefully they put a lot of thought into it
         self.METAL_RES_NAMES = ['LA','NI','3CO','K','CR','ZN','CD','PD','TB','YT3','OS','EU','NA','RB','W','YB','HO3',
                   'CE','MN','TL','LI','MN3','AU3','AU','EU3','AL','3NI','FE2','PT','FE','CA','AG','CU1',
@@ -212,7 +212,7 @@ class ChemicalData:
 
                 (" N  "," CA "," C  "," O  "," CB "," CG "," NE2"," CD2"," CE1"," ND1",  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None," H  "," HA ","1HB ","2HB ","2HD ","1HE ","1HD ",  None,  None,  None,  None,  None,  None), #-1 his_d
             ]
-            
+
 
             # build the "alternate" sc mapping
             self.aa2longalt=[
@@ -326,7 +326,7 @@ class ChemicalData:
                 (None, "genTb",  None,  None,  None,   None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None), # Tb
                 (None, "genTe",  None,  None,  None,   None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None), # Te
                 (None, "genU",  None,  None,  None,   None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None), # U
-                (None, "genW",  None,  None,  None,   None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None), # W   
+                (None, "genW",  None,  None,  None,   None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None), # W
                 (None, "genV",  None,  None,  None,   None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None), # V
                 (None, "genY",  None,  None,  None,   None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None), # Y
                 (None, "genZn",  None,  None,  None,   None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None), # Zn
@@ -1272,7 +1272,7 @@ class ChemicalData:
                 (None, "genTb",  None,  None,  None,   None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None), # Tb
                 (None, "genTe",  None,  None,  None,   None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None), # Te
                 (None, "genU",  None,  None,  None,   None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None), # U
-                (None, "genW",  None,  None,  None,   None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None), # W   
+                (None, "genW",  None,  None,  None,   None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None), # W
                 (None, "genV",  None,  None,  None,   None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None), # V
                 (None, "genY",  None,  None,  None,   None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None), # Y
                 (None, "genZn",  None,  None,  None,   None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None,  None), # Zn
@@ -2068,7 +2068,7 @@ class ChemicalData:
         if params.get("use_cif_ordering_for_trp", False):
             print("Using the cif atom ordering for TRP.")
             self.aa2long[17] = (" N  "," CA "," C  "," O  "," CB "," CG "," CD1"," CD2"," NE1"," CE2"," CE3"," CZ2"," CZ3"," CH2",  None,  None,  None,  None,  None,  None,  None,  None,  None," H  "," HA ","1HB ","2HB ","1HD ","1HE "," HZ2"," HH2"," HZ3"," HE3",  None,  None,  None)
-                
+
         self.aabonds=[
             #       0               1               2                3               4              5               6               7               8               9              10              11              12              13              14              15              16              17              18              19              20              21              22               23             24
             ((" N  "," CA "),(" N  "," H  "),(" CA "," C  "),(" CA "," CB "),(" CA "," HA "),(" C  "," O  "),(" CB ","1HB "),(" CB ","2HB "),(" CB ","3HB ")) , # ala
@@ -2118,13 +2118,13 @@ class ChemicalData:
         DOUBLE_BOND = self.DOUBLE_BOND
         AROMATIC_BOND = self.AROMATIC_BOND
         self.aabtypes = [
-            #    0              1           2             3            4           5             6            7            8           9             10                11             12           13               14            15              16           17              18              19           20             21           22            23            24      
+            #    0              1           2             3            4           5             6            7            8           9             10                11             12           13               14            15              16           17              18              19           20             21           22            23            24
             (SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, DOUBLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND), # ala
             (SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, DOUBLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND,   SINGLE_BOND,     SINGLE_BOND,   SINGLE_BOND,   SINGLE_BOND,     SINGLE_BOND,   SINGLE_BOND,   SINGLE_BOND, DOUBLE_BOND,     SINGLE_BOND,   SINGLE_BOND, SINGLE_BOND,   SINGLE_BOND, SINGLE_BOND), # arg
             (SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, DOUBLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, DOUBLE_BOND,   SINGLE_BOND,     SINGLE_BOND,   SINGLE_BOND), # asn
             (SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, DOUBLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, DOUBLE_BOND,   SINGLE_BOND), # asp
             (SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, DOUBLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND), # cys
-            (SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, DOUBLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND,   SINGLE_BOND,     SINGLE_BOND,   DOUBLE_BOND,   SINGLE_BOND,     SINGLE_BOND,   SINGLE_BOND), # gln 
+            (SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, DOUBLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND,   SINGLE_BOND,     SINGLE_BOND,   DOUBLE_BOND,   SINGLE_BOND,     SINGLE_BOND,   SINGLE_BOND), # gln
             (SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, DOUBLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND,   SINGLE_BOND,     SINGLE_BOND,   DOUBLE_BOND,   SINGLE_BOND), # glu
             (SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, DOUBLE_BOND), # gly
             (SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, DOUBLE_BOND, SINGLE_BOND, SINGLE_BOND, SINGLE_BOND, AROMATIC_BOND, AROMATIC_BOND,   AROMATIC_BOND, AROMATIC_BOND, SINGLE_BOND,     AROMATIC_BOND, SINGLE_BOND,   SINGLE_BOND), # his
@@ -2274,7 +2274,7 @@ class ChemicalData:
         self.tip_indices = torch.full((self.NAATOKENS,), 0)
         for i in range(self.NAATOKENS):
             if i > self.NNAPROTAAS-1:
-                # all atoms are at index 1 in the atom array 
+                # all atoms are at index 1 in the atom array
                 self.tip_indices[i] = 1
             else:
                 tip_atm = self.aa2tip[i]
@@ -2356,7 +2356,7 @@ class ChemicalData:
                     self.torsion_indices[i,16,:] = torch.tensor([4,5,6,10])     # nu2
                     self.torsion_indices[i,17,:] = torch.tensor([5,6,10,9])     # nu1
                     self.torsion_indices[i,18,:] = torch.tensor([6,10,9,7])     # nu0
-                else:   
+                else:
                     # is RNA (fd: my fault since I flipped C1'/C2' order for DNA and RNA)
                     self.torsion_indices[i,16,:] = torch.tensor([4,5,6,9])     # nu2
                     self.torsion_indices[i,17,:] = torch.tensor([5,6,9,10])     # nu1
@@ -2631,13 +2631,13 @@ class ChemicalData:
                     self.xyzs_in_base_frame[i,2,:3] , self.xyzs_in_base_frame[i,0,:3]
                 )
                 self.RTs_by_torsion[i,self.NPROTTORS+7,:3,3] = self.xyzs_in_base_frame[i,2,:3]
-    
+
                 # nu0 - currently not used for atom generation
                 self.RTs_by_torsion[i,self.NPROTTORS+8,:3,:3] = make_frame(
                     self.xyzs_in_base_frame[i,0,:3] , self.xyzs_in_base_frame[i,2,:3]
                 )
                 self.RTs_by_torsion[i,self.NPROTTORS+8,:3,3] = self.xyzs_in_base_frame[i,0,:3] # C2'
-    
+
                 # NA chi
                 if self.torsions[i][0] is not None:
                     a0,a1,a2 = self.torsion_indices[i,19,0:3]
@@ -2651,26 +2651,26 @@ class ChemicalData:
                     self.xyzs_in_base_frame[i,9,:3] , torch.tensor([-1.,0.,0.])
                 )
                 self.RTs_by_torsion[i,self.NPROTTORS+6,:3,3] = self.xyzs_in_base_frame[i,6,:3]
-    
+
 
                 # alpha
                 self.RTs_by_torsion[i,self.NPROTTORS+2,:3,:3] = make_frame(
                     self.xyzs_in_base_frame[i,4,:3], torch.tensor([-1.,0.,0.])
                 )
                 self.RTs_by_torsion[i,self.NPROTTORS+2,:3,3] = self.xyzs_in_base_frame[i,4,:3]
-    
+
                 # beta
                 self.RTs_by_torsion[i,self.NPROTTORS+3,:3,:3] = make_frame(
                     self.xyzs_in_base_frame[i,6,:3] , torch.tensor([-1.,0.,0.])
                 )
                 self.RTs_by_torsion[i,self.NPROTTORS+3,:3,3] = self.xyzs_in_base_frame[i,6,:3]
-    
+
                 # gamma
                 self.RTs_by_torsion[i,self.NPROTTORS+4,:3,:3] = make_frame(
                     self.xyzs_in_base_frame[i,7,:3] , torch.tensor([-1.,0.,0.])
                 )
                 self.RTs_by_torsion[i,self.NPROTTORS+4,:3,3] = self.xyzs_in_base_frame[i,7,:3]
-    
+
                 # delta
                 self.RTs_by_torsion[i,self.NPROTTORS+5,:3,:3] = make_frame(
                     self.xyzs_in_base_frame[i,8,:3] , torch.tensor([-1.,0.,0.])
@@ -2830,7 +2830,7 @@ def load_pdb_ideal_sdf_strings(base_path: Optional[str] = script_dir, return_onl
         string of the sdf file with idealized coordinates for that molecule
         atom names for the atoms in order
         leaving groups if there are covalent modifications to the ligand
-        pdbx_align 
+        pdbx_align
     """
     file_name = 'ligands.json.gz'
     if base_path is not None:
@@ -2856,7 +2856,7 @@ def load_tanimoto_sim_matrix(base_path=script_dir):
         file_name = Path(base_path) / file_name
 
     tanimoto_data = np.load(file_name, allow_pickle=True)
-    
+
     sim = tanimoto_data['sim']
     names = tanimoto_data['names']
     return sim, names

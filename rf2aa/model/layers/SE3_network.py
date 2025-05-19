@@ -50,7 +50,7 @@ class SE3TransformerWrapper(nn.Module):
                 fiber_in = Fiber({0: l0_in_features})
                 fiber_hidden = Fiber.create(num_degrees, num_channels)
                 fiber_out = Fiber({0: l0_out_features})
-        
+
         self.se3 = SE3Transformer(num_layers=num_layers,
                                   fiber_in=fiber_in,
                                   fiber_hidden=fiber_hidden,
@@ -74,13 +74,13 @@ class SE3TransformerWrapper(nn.Module):
                 continue
             else:
                 if "radial_func" not in n:
-                    p = init_lecun_normal_param(p) 
+                    p = init_lecun_normal_param(p)
                 else:
                     if "net.6" in n:
                         nn.init.zeros_(p)
                     else:
                         nn.init.kaiming_normal_(p, nonlinearity='relu')
-        
+
         # make last layers to be zero-initialized
         #self.se3.graph_modules[-1].to_kernel_self['0'] = init_lecun_normal_param(self.se3.graph_modules[-1].to_kernel_self['0'])
         #self.se3.graph_modules[-1].to_kernel_self['1'] = init_lecun_normal_param(self.se3.graph_modules[-1].to_kernel_self['1'])
@@ -97,4 +97,3 @@ class SE3TransformerWrapper(nn.Module):
             node_features = {'0': type_0_features}
         edge_features = {'0': edge_features}
         return self.se3(G, node_features, edge_features)
-

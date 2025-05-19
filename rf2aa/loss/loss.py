@@ -47,14 +47,14 @@ class LJLoss(torch.autograd.Function):
 
     @staticmethod
     def forward(
-        ctx, xs, seq, aamask, bond_feats, dist_matrix, ljparams, ljcorr, num_bonds, 
-        lj_lin=0.75, lj_hb_dis=3.0, lj_OHdon_dis=2.6, lj_hbond_hdis=1.75, 
+        ctx, xs, seq, aamask, bond_feats, dist_matrix, ljparams, ljcorr, num_bonds,
+        lj_lin=0.75, lj_hb_dis=3.0, lj_OHdon_dis=2.6, lj_hbond_hdis=1.75,
         eps=1e-8, training=True
     ):
         N, L, A = xs.shape[:3]
         assert (N==1) # see comment below
 
-        ds_res = torch.sqrt( torch.sum ( torch.square( 
+        ds_res = torch.sqrt( torch.sum ( torch.square(
             xs.detach()[:,:,None,1,:]-xs.detach()[:,None,:,1,:]), dim=-1 ))
         rs = torch.triu_indices(L,L,0, device=xs.device)
         ri,rj = rs[0],rs[1]
@@ -67,7 +67,7 @@ class LJLoss(torch.autograd.Function):
 
         for i_batch in range((len(ri)-1)//BATCHSIZE + 1):
             idx = torch.arange(
-                i_batch*BATCHSIZE, 
+                i_batch*BATCHSIZE,
                 min( (i_batch+1)*BATCHSIZE, len(ri)),
                 device=xs.device
             )
@@ -118,15 +118,15 @@ class LJLoss(torch.autograd.Function):
 
             # hbond correction
             use_hb_dis = (
-                ljcorr[seqi,ai,0]*ljcorr[seqj,aj,1] 
+                ljcorr[seqi,ai,0]*ljcorr[seqj,aj,1]
                 + ljcorr[seqi,ai,1]*ljcorr[seqj,aj,0] ).nonzero()
             use_ohdon_dis = ( # OH are both donors & acceptors
-                ljcorr[seqi,ai,0]*ljcorr[seqi,ai,1]*ljcorr[seqj,aj,0] 
-                +ljcorr[seqi,ai,0]*ljcorr[seqj,aj,0]*ljcorr[seqj,aj,1] 
+                ljcorr[seqi,ai,0]*ljcorr[seqi,ai,1]*ljcorr[seqj,aj,0]
+                +ljcorr[seqi,ai,0]*ljcorr[seqj,aj,0]*ljcorr[seqj,aj,1]
             ).nonzero()
             use_hb_hdis = (
-                ljcorr[seqi,ai,2]*ljcorr[seqj,aj,1] 
-                +ljcorr[seqi,ai,1]*ljcorr[seqj,aj,2] 
+                ljcorr[seqi,ai,2]*ljcorr[seqj,aj,1]
+                +ljcorr[seqi,ai,1]*ljcorr[seqj,aj,2]
             ).nonzero()
 
             # disulfide correction
@@ -167,21 +167,21 @@ class LJLoss(torch.autograd.Function):
         """
         dljEdx, = ctx.saved_tensors
         return (
-            grad_output * dljEdx, 
+            grad_output * dljEdx,
             None, None, None, None, None, None, None, None, None, None, None, None, None
         )
 
 # Rosetta-like version of LJ (fa_atr+fa_rep)
 #   lj_lin is switch from linear to 12-6.  Smaller values more sharply penalize clashes
 def calc_lj(
-    seq, xs, aamask, bond_feats, dist_matrix, ljparams, ljcorr, num_bonds,  
-    lj_lin=0.75, lj_hb_dis=3.0, lj_OHdon_dis=2.6, lj_hbond_hdis=1.75, 
+    seq, xs, aamask, bond_feats, dist_matrix, ljparams, ljcorr, num_bonds,
+    lj_lin=0.75, lj_hb_dis=3.0, lj_OHdon_dis=2.6, lj_hbond_hdis=1.75,
     lj_maxrad=-1.0, eps=1e-8,
     training=True
 ):
     lj = LJLoss.apply
     ljval = lj(
-        xs, seq, aamask, bond_feats, dist_matrix, ljparams, ljcorr, num_bonds, 
+        xs, seq, aamask, bond_feats, dist_matrix, ljparams, ljcorr, num_bonds,
         lj_lin, lj_hb_dis, lj_OHdon_dis, lj_hbond_hdis, eps, training)
 
     return ljval
@@ -205,27 +205,27 @@ def calc_chiral_loss(pred, chirals):
 
 @torch.enable_grad()
 def calc_lj_grads(
-    seq, xyz, alpha, toaa, bond_feats, dist_matrix, 
-    aamask, ljparams, ljcorr, num_bonds, 
-    lj_lin=0.85, lj_hb_dis=3.0, lj_OHdon_dis=2.6, lj_hbond_hdis=1.75, 
+    seq, xyz, alpha, toaa, bond_feats, dist_matrix,
+    aamask, ljparams, ljcorr, num_bonds,
+    lj_lin=0.85, lj_hb_dis=3.0, lj_OHdon_dis=2.6, lj_hbond_hdis=1.75,
     lj_maxrad=-1.0, eps=1e-8
 ):
     xyz.requires_grad_(True)
     alpha.requires_grad_(True)
     _, xyzaa = toaa(seq, xyz, alpha)
     Elj = calc_lj(
-        seq[0], 
-        xyzaa[...,:3], 
+        seq[0],
+        xyzaa[...,:3],
         aamask,
         bond_feats,
         dist_matrix,
-        ljparams, 
-        ljcorr, 
+        ljparams,
+        ljcorr,
         num_bonds,
-        lj_lin, 
-        lj_hb_dis, 
-        lj_OHdon_dis, 
-        lj_hbond_hdis, 
+        lj_lin,
+        lj_hb_dis,
+        lj_OHdon_dis,
+        lj_hbond_hdis,
         lj_maxrad,
         eps
     )

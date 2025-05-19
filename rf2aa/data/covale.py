@@ -31,10 +31,10 @@ class AtomizedResidue:
 def load_covalent_molecules(protein_inputs, config, model_runner):
     if config.covale_inputs is None:
         return None
-    
+
     if config.sm_inputs is None:
         raise ValueError("If you provide covale_inputs, you must also provide small molecule inputs")
-     
+
     covalent_bonds = eval(config.covale_inputs)
     sm_inputs = delete_leaving_atoms(config.sm_inputs)
     residues_to_atomize, combined_molecules, extra_bonds = find_residues_to_atomize(protein_inputs, sm_inputs, covalent_bonds, model_runner)
@@ -47,7 +47,7 @@ def load_covalent_molecules(protein_inputs, config, model_runner):
         xyz = recompute_xyz_after_chirality(mol)
         input = compute_features_from_obmol(mol, msa, xyz, model_runner)
         chainid_to_input[chain] = input
-    
+
     return chainid_to_input, residues_to_atomize
 
 def find_residues_to_atomize(protein_inputs, sm_inputs, covalent_bonds, model_runner):
@@ -63,7 +63,7 @@ def find_residues_to_atomize(protein_inputs, sm_inputs, covalent_bonds, model_ru
         if chirality_second_atom.strip() == "null":
             chirality_second_atom = None
 
-        sm_atom_num = int(sm_atom_num) - 1 # 0 index 
+        sm_atom_num = int(sm_atom_num) - 1 # 0 index
         try:
             assert sm_chid in sm_inputs, f"must provide a small molecule chain {sm_chid} for covalent bond: {bond}"
         except:
@@ -76,15 +76,15 @@ def find_residues_to_atomize(protein_inputs, sm_inputs, covalent_bonds, model_ru
             raise ValueError(f"first atom in covale_input must be present in\
                              a protein chain. Given chain: {prot_chid} was not in \
                             given protein chains: {list(protein_inputs.keys())}")
-        
+
         residue = (prot_chid, prot_res_idx, atom_to_bond)
-        file, atom_index = convert_residue_to_molecule(protein_inputs, residue, model_runner) 
+        file, atom_index = convert_residue_to_molecule(protein_inputs, residue, model_runner)
         if sm_chid not in combined_molecules:
             combined_molecules[sm_chid] = [sm_inputs[sm_chid].input]
         combined_molecules[sm_chid].insert(0, file) # this is a bug, revert
         absolute_chain_index_first = combined_molecules[sm_chid].index(sm_inputs[sm_chid].input)
         absolute_chain_index_second = combined_molecules[sm_chid].index(file)
-        
+
         if sm_chid not in extra_bonds:
             extra_bonds[sm_chid] = []
         extra_bonds[sm_chid].append(MoleculeToMoleculeBond(
@@ -98,7 +98,7 @@ def find_residues_to_atomize(protein_inputs, sm_inputs, covalent_bonds, model_ru
         residues_to_atomize.append(AtomizedResidue(
             sm_chid,
             absolute_chain_index_second,
-            0, 
+            0,
             2,
             prot_chid,
             int(prot_res_idx) -1
@@ -132,11 +132,11 @@ def get_combined_atoms_bonds(combined_molecule):
     Ls = []
     for molecule in combined_molecule:
         obmol, msa, ins, xyz, mask = parse_mol(
-            molecule, 
-            filetype="sdf", 
+            molecule,
+            filetype="sdf",
             string=False,
             generate_conformer=True,
-            find_automorphs=False    
+            find_automorphs=False
         )
         bond_feats = get_bond_feats(obmol)
 
@@ -144,7 +144,7 @@ def get_combined_atoms_bonds(combined_molecule):
         bond_feats_list.append(bond_feats)
         xyzs.append(xyz)
         Ls.append(msa.shape[0])
-    
+
     atoms = torch.cat(atom_list)
     L_total = sum(Ls)
     bond_feats = torch.zeros((L_total, L_total)).long()
@@ -155,9 +155,9 @@ def get_combined_atoms_bonds(combined_molecule):
         offset += L
     xyz = torch.cat(xyzs, dim=1)[0]
     return atoms, bond_feats, xyz, Ls
-        
+
 def make_obmol_from_atoms_bonds(msa, bond_feats, xyz, Ls, extra_bonds):
-    mol = openbabel.OBMol()    
+    mol = openbabel.OBMol()
     for i,k in enumerate(msa):
         element = ChemData().num2aa[k]
         atomnum = ChemData().atomtype2atomnum[element]
@@ -174,9 +174,9 @@ def make_obmol_from_atoms_bonds(msa, bond_feats, xyz, Ls, extra_bonds):
     for bond in extra_bonds:
         absolute_index_first = get_absolute_index_from_relative_indices(
             bond.chain_index_first,
-            bond.absolute_atom_index_first, 
+            bond.absolute_atom_index_first,
             Ls
-        ) 
+        )
         absolute_index_second = get_absolute_index_from_relative_indices(
             bond.chain_index_second,
             bond.absolute_atom_index_second,
@@ -209,14 +209,14 @@ def set_chirality(mol, absolute_atom_index, new_chirality):
 
         assert new_chirality is not None, "you have introduced a new stereocenter, \
             so you must specify its chirality either as CW, or CCW"
-        
+
         config = tetstereo.GetConfig()
         config.winding = chirality_options[new_chirality]
         tetstereo.SetConfig(config)
         print("Updating chirality...")
     else:
         assert new_chirality is None, "you have specified a chirality without creating a new chiral center"
-    
+
 chirality_options = {
     "CW": openbabel.OBStereo.Clockwise,
     "CCW": openbabel.OBStereo.AntiClockwise,
@@ -232,7 +232,7 @@ def recompute_xyz_after_chirality(obmol):
         ff.GetCoordinates(obmol)
     else:
         raise ValueError(f"Failed to generate 3D coordinates for molecule {filename}.")
-    atom_coords = torch.tensor([[obmol.GetAtom(i).x(),obmol.GetAtom(i).y(), obmol.GetAtom(i).z()] 
+    atom_coords = torch.tensor([[obmol.GetAtom(i).x(),obmol.GetAtom(i).y(), obmol.GetAtom(i).z()]
                                 for i in range(1, obmol.NumAtoms()+1)]).unsqueeze(0) # (1, natoms, 3)
     return atom_coords
 
@@ -247,16 +247,16 @@ def delete_leaving_atoms(sm_inputs):
             "input": create_and_populate_temp_file(sdf_string),
             "input_type": "sdf"
             }
-    
+
     sm_inputs.update(updated_sm_inputs)
     return sm_inputs
 
 def delete_leaving_atoms_single_chain(filename, is_leaving):
     obmol, msa, ins, xyz, mask = parse_mol(
         filename,
-        filetype="sdf", 
+        filetype="sdf",
         string=False,
-        generate_conformer=True    
+        generate_conformer=True
     )
     assert len(is_leaving) == obmol.NumAtoms()
     leaving_indices = torch.tensor(is_leaving).nonzero()

@@ -10,7 +10,7 @@ def make_msa(
     fasta_file,
     chain,
     model_runner
-): 
+):
     out_dir_base = Path(model_runner.config.output_path)
     hash = model_runner.config.job_name
     out_dir = out_dir_base / hash / chain

@@ -22,7 +22,7 @@ class FeedForwardLayer(nn.Module):
         # initialize linear layer right before residual connection: zero initialize
         nn.init.zeros_(self.linear2.weight)
         nn.init.zeros_(self.linear2.bias)
-    
+
     def forward(self, src):
         src = self.norm(src)
         src = self.linear2(self.dropout(F.relu_(self.linear1(src))))
@@ -86,7 +86,7 @@ class SequenceWeight(nn.Module):
         self.to_key = nn.Linear(d_msa, n_head*d_hidden)
         self.dropout = nn.Dropout(p_drop)
         self.reset_parameter()
-    
+
     def reset_parameter(self):
         # query/key/value projection: Glorot uniform / Xavier uniform
         nn.init.xavier_uniform_(self.to_query.weight)
@@ -94,12 +94,12 @@ class SequenceWeight(nn.Module):
 
     def forward(self, msa):
         B, N, L = msa.shape[:3]
-       
+
         tar_seq = msa[:,0]
-        
+
         q = self.to_query(tar_seq).view(B, 1, L, self.h, self.dim)
         k = self.to_key(msa).view(B, N, L, self.h, self.dim)
-        
+
         q = q * self.scale
         attn = einsum('bqihd,bkihd->bkihq', q, k)
         attn = F.softmax(attn, dim=1)
@@ -130,7 +130,7 @@ class MSARowAttentionWithBias(nn.Module):
         nn.init.xavier_uniform_(self.to_q.weight)
         nn.init.xavier_uniform_(self.to_k.weight)
         nn.init.xavier_uniform_(self.to_v.weight)
-        
+
         # bias: normal distribution
         self.to_b = init_lecun_normal(self.to_b)
 
@@ -181,7 +181,7 @@ class MSAColAttention(nn.Module):
         self.scaling = 1/math.sqrt(d_hidden)
         self.h = n_head
         self.dim = d_hidden
-        
+
         self.reset_parameter()
 
     def reset_parameter(self):
@@ -232,7 +232,7 @@ class MSAColGlobalAttention(nn.Module):
         self.scaling = 1/math.sqrt(d_hidden)
         self.h = n_head
         self.dim = d_hidden
-        
+
         self.reset_parameter()
 
     def reset_parameter(self):
@@ -278,18 +278,18 @@ class TriangleAttention(nn.Module):
         self.to_q = nn.Linear(d_pair, n_head*d_hidden, bias=False)
         self.to_k = nn.Linear(d_pair, n_head*d_hidden, bias=False)
         self.to_v = nn.Linear(d_pair, n_head*d_hidden, bias=False)
-        
+
         self.to_b = nn.Linear(d_pair, n_head, bias=False)
         self.to_g = nn.Linear(d_pair, n_head*d_hidden)
 
         self.to_out = nn.Linear(n_head*d_hidden, d_pair)
 
         self.scaling = 1/math.sqrt(d_hidden)
-        
+
         self.h = n_head
         self.dim = d_hidden
         self.start_node=start_node
-        
+
         self.reset_parameter()
 
     def reset_parameter(self):
@@ -297,7 +297,7 @@ class TriangleAttention(nn.Module):
         nn.init.xavier_uniform_(self.to_q.weight)
         nn.init.xavier_uniform_(self.to_k.weight)
         nn.init.xavier_uniform_(self.to_v.weight)
-        
+
         # bias: normal distribution
         self.to_b = init_lecun_normal(self.to_b)
 
@@ -313,14 +313,14 @@ class TriangleAttention(nn.Module):
         B, L = pair.shape[:2]
 
         pair = self.norm(pair)
-        
+
         # input projection
         query = self.to_q(pair).reshape(B, L, L, self.h, -1)
         key = self.to_k(pair).reshape(B, L, L, self.h, -1)
         value = self.to_v(pair).reshape(B, L, L, self.h, -1)
         bias = self.to_b(pair) # (B, L, L, h)
         gate = torch.sigmoid(self.to_g(pair)) # (B, L, L, h*dim)
-        
+
         # attention
         query = query * self.scaling
         if self.start_node:
@@ -334,7 +334,7 @@ class TriangleAttention(nn.Module):
         else:
             out = einsum('bijkh,bkjhd->bijhd', attn, value).reshape(B, L, L, -1)
         out = gate * out # gated attention
-        
+
         # output projection
         out = self.to_out(out)
         return out
@@ -353,14 +353,14 @@ class TriangleMultiplication(nn.Module):
         self.out_proj = nn.Linear(d_hidden, d_pair)
 
         self.outgoing = outgoing
-        
+
         self.reset_parameter()
 
     def reset_parameter(self):
         # normal distribution for regular linear weights
         self.left_proj = init_lecun_normal(self.left_proj)
         self.right_proj = init_lecun_normal(self.right_proj)
-        
+
         # Set Bias of Linear layers to zeros
         nn.init.zeros_(self.left_proj.bias)
         nn.init.zeros_(self.right_proj.bias)
@@ -368,17 +368,17 @@ class TriangleMultiplication(nn.Module):
         # gating: zero weights, one biases (mostly open gate at the begining)
         nn.init.zeros_(self.left_gate.weight)
         nn.init.ones_(self.left_gate.bias)
-        
+
         nn.init.zeros_(self.right_gate.weight)
         nn.init.ones_(self.right_gate.bias)
-        
+
         nn.init.zeros_(self.gate.weight)
         nn.init.ones_(self.gate.bias)
 
         # to_out: right before residual connection: zero initialize -- to make it sure residual operation is same to the Identity at the begining
         nn.init.zeros_(self.out_proj.weight)
         nn.init.zeros_(self.out_proj.bias)
-    
+
     def forward(self, pair):
         B, L = pair.shape[:2]
         pair = self.norm(pair)
@@ -386,11 +386,11 @@ class TriangleMultiplication(nn.Module):
         left = self.left_proj(pair) # (B, L, L, d_h)
         left_gate = torch.sigmoid(self.left_gate(pair))
         left = left_gate * left
-        
+
         right = self.right_proj(pair) # (B, L, L, d_h)
         right_gate = torch.sigmoid(self.right_gate(pair))
         right = right_gate * right
-        
+
         if self.outgoing:
             out = einsum('bikd,bjkd->bijd', left, right/float(L))
         else:
@@ -414,14 +414,14 @@ class BiasedAxialAttention(nn.Module):
         self.to_q = nn.Linear(d_pair, n_head*d_hidden, bias=False)
         self.to_k = nn.Linear(d_pair, n_head*d_hidden, bias=False)
         self.to_v = nn.Linear(d_pair, n_head*d_hidden, bias=False)
-        self.to_b = nn.Linear(d_bias, n_head, bias=False) 
+        self.to_b = nn.Linear(d_bias, n_head, bias=False)
         self.to_g = nn.Linear(d_pair, n_head*d_hidden)
         self.to_out = nn.Linear(n_head*d_hidden, d_pair)
-        
+
         self.scaling = 1/math.sqrt(d_hidden)
         self.h = n_head
         self.dim = d_hidden
-        
+
         # initialize all parameters properly
         self.reset_parameter()
 
@@ -445,7 +445,7 @@ class BiasedAxialAttention(nn.Module):
     def forward(self, pair, bias):
         # pair: (B, L, L, d_pair)
         B, L = pair.shape[:2]
-        
+
         if self.is_row:
             pair = pair.permute(0,2,1,3)
             bias = bias.permute(0,2,1,3)
@@ -457,19 +457,18 @@ class BiasedAxialAttention(nn.Module):
         key = self.to_k(pair).reshape(B, L, L, self.h, self.dim)
         value = self.to_v(pair).reshape(B, L, L, self.h, self.dim)
         bias = self.to_b(bias) # (B, L, L, h)
-        gate = torch.sigmoid(self.to_g(pair)) # (B, L, L, h*dim) 
-        
+        gate = torch.sigmoid(self.to_g(pair)) # (B, L, L, h*dim)
+
         query = query * self.scaling
         key = key / L # normalize for tied attention
         attn = einsum('bnihk,bnjhk->bijh', query, key) # tied attention
         attn = attn + bias # apply bias
         attn = F.softmax(attn, dim=-2) # (B, L, L, h)
-        
+
         out = einsum('bijh,bnjhd->bnihd', attn, value).reshape(B, L, L, -1)
         out = gate * out
-        
+
         out = self.to_out(out)
         if self.is_row:
             out = out.permute(0,2,1,3)
         return out
-

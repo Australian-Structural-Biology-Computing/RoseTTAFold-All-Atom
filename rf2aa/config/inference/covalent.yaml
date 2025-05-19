@@ -4,12 +4,12 @@ defaults:
 
 job_name: 7s69_A
 
-protein_inputs: 
-  A: 
+protein_inputs:
+  A:
     fasta_file: examples/protein/7s69_A.fasta
 
 sm_inputs:
-  B: 
+  B:
     input: examples/small_molecule/7s69_glycan.sdf
     input_type: sdf
 

@@ -17,13 +17,13 @@ FFindexEntry = namedtuple("FFindexEntry", "name, offset, length")
 
 def read_index(ffindex_filename):
     entries = []
-    
+
     fh = open(ffindex_filename, "r")
     for line in fh:
         tokens = line.split("\t")
         entries.append(FFindexEntry(tokens[0], int(tokens[1]), int(tokens[2])))
     fh.close()
-    
+
     return entries
 
 

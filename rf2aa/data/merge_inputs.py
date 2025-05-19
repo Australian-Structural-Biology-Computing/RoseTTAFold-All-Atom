@@ -29,7 +29,7 @@ def merge_protein_inputs(protein_inputs, deterministic: bool = False):
         ]
         hash_list = [md5(input.sequence_string().encode()).hexdigest() for input in protein_inputs.values()]
         lengths_list = [input.length() for input in protein_inputs.values()]
-        
+
         seen = set()
         unique_indices = []
         for idx, hash in enumerate(hash_list):
@@ -50,10 +50,10 @@ def merge_protein_inputs(protein_inputs, deterministic: bool = False):
             a3m  = unique_a3m[0]
             msa, ins = a3m["msa"], a3m["ins"]
             a3m_out = merge_a3m_homo(msa, ins, len(hash_list))
-        
+
         # merge templates
         max_template_dim = max([input.xyz_t.shape[0] for input in protein_inputs.values()])
-        xyz_t_list = [input.xyz_t for input in protein_inputs.values()] 
+        xyz_t_list = [input.xyz_t for input in protein_inputs.values()]
         mask_t_list = [input.mask_t for input in protein_inputs.values()]
         t1d_list = [input.t1d for input  in protein_inputs.values()]
         ids  = ["inference"] * len(t1d_list)
@@ -61,7 +61,7 @@ def merge_protein_inputs(protein_inputs, deterministic: bool = False):
 
         atom_frames = torch.zeros(0,3,2)
         chirals = torch.zeros(0,5)
-        
+
 
         L_total = sum(lengths_list)
         bond_feats = torch.zeros((L_total, L_total)).long()
@@ -160,18 +160,18 @@ def merge_two_inputs(first_input, second_input):
 
 def merge_all(
     protein_inputs,
-    na_inputs, 
+    na_inputs,
     sm_inputs,
     residues_to_atomize,
     deterministic: bool = False,
 ):
 
     protein_inputs, protein_chain_lengths = merge_protein_inputs(protein_inputs, deterministic=deterministic)
-    
+
     na_inputs, na_chain_lengths = merge_na_inputs(na_inputs)
     sm_inputs, sm_chain_lengths = merge_sm_inputs(sm_inputs)
     if protein_inputs is None and na_inputs is None and sm_inputs is None:
-        raise ValueError("No valid inputs were provided") 
+        raise ValueError("No valid inputs were provided")
     running_inputs = merge_two_inputs(protein_inputs, na_inputs) #could handle pairing protein/NA MSAs here
     running_inputs = merge_two_inputs(running_inputs, sm_inputs)
 
@@ -186,7 +186,7 @@ def merge_all(
 
     xyz_t = running_inputs.xyz_t
     mask_t = running_inputs.mask_t
-    
+
     same_chain = same_chain = same_chain_from_bond_feats(running_inputs.bond_feats)
     ntempl = xyz_t.shape[0]
     xyz_t = torch.stack(
@@ -205,4 +205,3 @@ def merge_all(
 
 def get_Ls_from_chain_lengths(chain_lengths):
     return [val[1] for val in chain_lengths]
-

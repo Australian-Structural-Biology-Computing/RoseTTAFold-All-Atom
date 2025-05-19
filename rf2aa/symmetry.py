@@ -97,7 +97,7 @@ def kabsch(pred, true):
 # do lines X0->X and Y0->Y intersect?
 def intersect(X0,X,Y0,Y,eps=0.1):
     mtx = torch.cat(
-        (torch.stack((X0,X0+X,Y0,Y0+Y)), torch.ones((4,1))) , axis=1 
+        (torch.stack((X0,X0+X,Y0,Y0+Y)), torch.ones((4,1))) , axis=1
     )
     det = torch.linalg.det( mtx )
     return (torch.abs(det) <= eps)
@@ -108,7 +108,7 @@ def get_angle(X,Y):
         angle = np.pi - angle
     return angle
 
-# given the coordinates of a subunit + 
+# given the coordinates of a subunit +
 def get_symmetry(xyz, mask, rms_cut=2.5, nfold_cut=0.1, angle_cut=0.05, trans_cut=2.0):
     nops = xyz.shape[0]
     L = xyz.shape[1]//2
@@ -147,7 +147,7 @@ def get_symmetry(xyz, mask, rms_cut=2.5, nfold_cut=0.1, angle_cut=0.05, trans_cu
             continue
 
 
-        # 3) get a point on the symm axis from CoMs and angle 
+        # 3) get a point on the symm axis from CoMs and angle
         cIJ = torch.sign(angle) * (cJ-cI).squeeze(0)
         dIJ = torch.linalg.norm(cIJ)
         p_mid = (cI+cJ).squeeze(0) / 2
@@ -218,12 +218,12 @@ def get_symmetry(xyz, mask, rms_cut=2.5, nfold_cut=0.1, angle_cut=0.05, trans_cu
                 symmgroup = 'I'
             else:
                 pass
-                #fd: we could use a single symmetry here instead.  
+                #fd: we could use a single symmetry here instead.
                 #    But these cases mostly are bad BIOUNIT annotations...
                 #print ('nomatch',angle, [(x,y) for x,_,_,y in symmaxes])
 
     return symmgroup, subsymm
-        
+
 
 def symm_subunit_matrix(symmid):
     if (symmid[0]=='C'):

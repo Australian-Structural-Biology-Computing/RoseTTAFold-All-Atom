@@ -52,12 +52,12 @@ def get_term_feats(Ls):
     return term_info
 
 
-def MSAFeaturize(msa, ins, params, p_mask=0.15, eps=1e-6, nmer=1, L_s=[], 
+def MSAFeaturize(msa, ins, params, p_mask=0.15, eps=1e-6, nmer=1, L_s=[],
     term_info=None, tocpu=False, fixbb=False, seed_msa_clus=None, deterministic=False):
     '''
     Input: full MSA information (after Block deletion if necessary) & full insertion information
     Output: seed MSA features & extra sequences
-    
+
     Seed MSA features:
         - aatype of seed sequence (20 regular aa + 1 gap/unknown + 1 mask)
         - profile of clustered sequences (22)
@@ -81,7 +81,7 @@ def MSAFeaturize(msa, ins, params, p_mask=0.15, eps=1e-6, nmer=1, L_s=[],
         msa = msa[:1]
         ins = ins[:1]
     N, L = msa.shape
-    
+
     if term_info is None:
         if len(L_s)==0:
             L_s = [L]
@@ -90,15 +90,15 @@ def MSAFeaturize(msa, ins, params, p_mask=0.15, eps=1e-6, nmer=1, L_s=[],
 
     #binding_site = torch.zeros((L,1), device=msa.device).float()
     binding_site = torch.zeros((L,0), device=msa.device).float() # keeping this off for now (Jue 12/19)
-        
+
     # raw MSA profile
     raw_profile = torch.nn.functional.one_hot(msa, num_classes=ChemData().NAATOKENS) # N x L x NAATOKENS
     raw_profile = raw_profile.float().mean(dim=0) # L x NAATOKENS
 
     # Select Nclust sequence randomly (seed MSA or latent MSA)
-    Nclust = (min(N, params['MAXLAT'])-1) // nmer 
+    Nclust = (min(N, params['MAXLAT'])-1) // nmer
     Nclust = Nclust*nmer + 1
-    
+
     if N > Nclust*2:
         Nextra = N - Nclust
     else:
@@ -132,7 +132,7 @@ def MSAFeaturize(msa, ins, params, p_mask=0.15, eps=1e-6, nmer=1, L_s=[],
         msa_clust = torch.cat((msa[:1,:], msa[1:,:][sample[:Nclust-1]]), dim=0)
         ins_clust = torch.cat((ins[:1,:], ins[1:,:][sample[:Nclust-1]]), dim=0)
 
-        # 15% random masking 
+        # 15% random masking
         # - 10%: aa replaced with a uniformly sampled random amino acid
         # - 10%: aa replaced with an amino acid sampled from the MSA profile
         # - 10%: not replaced
@@ -144,14 +144,14 @@ def MSAFeaturize(msa, ins, params, p_mask=0.15, eps=1e-6, nmer=1, L_s=[],
         #raw_profile[...,ChemData().NPROTAAS:] = 0
         probs = 0.1*random_aa + 0.1*raw_profile + 0.1*same_aa
         #probs = torch.nn.functional.pad(probs, (0, 1), "constant", 0.7)
-        
+
         # explicitly set the probability of masking for nucleic acids and atoms
         #probs[...,is_protein(seq),ChemData().MASKINDEX]=0.7
         #probs[...,~is_protein(seq), :] = 0 # probably overkill but set all none protein elements to 0
         #probs[1:, ~is_protein(seq),20] = 1.0 # want to leave the gaps as gaps
         #probs[0,is_nucleic(seq), ChemData().MASKINDEX] = 1.0
         #probs[0,is_atom(seq), ChemData().aa2num["ATM"]] = 1.0
-        
+
         sampler = torch.distributions.categorical.Categorical(probs=probs)
         mask_sample = sampler.sample()
 
@@ -178,7 +178,7 @@ def MSAFeaturize(msa, ins, params, p_mask=0.15, eps=1e-6, nmer=1, L_s=[],
             ins_extra = torch.cat((ins_clust, ins_add), dim=0)
             extra_mask = torch.cat((mask_pos, mask_add), dim=0)
         N_extra = msa_extra.shape[0]
-        
+
         # clustering (assign remaining sequences to their closest cluster by Hamming distance
         msa_clust_onehot = torch.nn.functional.one_hot(msa_masked, num_classes=ChemData().NAATOKENS)
         msa_extra_onehot = torch.nn.functional.one_hot(msa_extra, num_classes=ChemData().NAATOKENS)
@@ -236,7 +236,7 @@ def MSAFeaturize(msa, ins, params, p_mask=0.15, eps=1e-6, nmer=1, L_s=[],
             b_msa_seed.append(msa_seed)
             b_msa_extra.append(msa_extra)
             b_mask_pos.append(mask_pos)
-    
+
     b_seq = torch.stack(b_seq)
     b_msa_clust = torch.stack(b_msa_clust)
     b_msa_seed = torch.stack(b_msa_seed)
@@ -267,7 +267,7 @@ def TemplFeaturize(tplt, qlen, params, offset=0, npick=1, npick_global=None, pic
         np.random.seed(0)
         torch.manual_seed(0)
         torch.cuda.manual_seed(0)
-    
+
     seqID_cut = params['SEQID']
 
     if npick_global == None:
@@ -276,14 +276,14 @@ def TemplFeaturize(tplt, qlen, params, offset=0, npick=1, npick_global=None, pic
     ntplt = len(tplt['ids'])
     if (ntplt < 1) or (npick < 1): #no templates in hhsearch file or not want to use templ
         return blank_template(npick_global, qlen, random_noise)
-    
+
     # ignore templates having too high seqID
     if seqID_cut <= 100.0:
         tplt_valid_idx = torch.where(tplt['f0d'][0,:,4] < seqID_cut)[0]
         tplt['ids'] = np.array(tplt['ids'])[tplt_valid_idx]
     else:
         tplt_valid_idx = torch.arange(len(tplt['ids']))
-    
+
     # check again if there are templates having seqID < cutoff
     ntplt = len(tplt['ids'])
     npick = min(npick, ntplt)
@@ -308,7 +308,7 @@ def TemplFeaturize(tplt, qlen, params, offset=0, npick=1, npick_global=None, pic
         xyz[i,pos,:ntmplatoms] = tplt['xyz'][0,sel]
         mask_t[i,pos,:ntmplatoms] = tplt['mask'][0,sel].bool()
 
-        # 1-D features: alignment confidence 
+        # 1-D features: alignment confidence
         t1d[i,pos] = tplt['seq'][0,sel]
         t1d_val[i,pos] = tplt['f1d'][0,sel,2] # alignment confidence
         # xyz[i] = center_and_realign_missing(xyz[i], mask_t[i], same_chain=same_chain)
@@ -336,7 +336,7 @@ def merge_hetero_templates(xyz_t_prot, f1d_t_prot, mask_t_prot, tplt_ids, Ls_pro
             i1, i2 = 1, N_tmpl
         else:
             i1, i2 = i_tmpl, i_tmpl+N_tmpl - 1
- 
+
         # 1st template is concatenated directly, so that all atoms are set in xyz_prev
         xyz_t_out[0, i_res:i_res+L_tmpl] = random_rot_trans(xyz_[0:1], deterministic=deterministic)
         f1d_t_out[0, i_res:i_res+L_tmpl] = f1d_[0]
@@ -348,7 +348,7 @@ def merge_hetero_templates(xyz_t_prot, f1d_t_prot, mask_t_prot, tplt_ids, Ls_pro
         xyz_t_out[i1:i2, i_res:i_res+L_tmpl] = xyz_[1:]
         f1d_t_out[i1:i2, i_res:i_res+L_tmpl] = f1d_[1:]
         mask_t_out[i1:i2, i_res:i_res+L_tmpl] = mask_[1:]
-        tplt_ids_out[i1:i2] = ids[1:] 
+        tplt_ids_out[i1:i2] = ids[1:]
         if i_tmpl == 0:
             i_tmpl += N_tmpl
         else:
@@ -429,7 +429,7 @@ def merge_a3m_homo(msa_orig, ins_orig, nmer, mode="default"):
          start_L = 0
          start_N = 1
          for i_c in range(nmer):
-             msa[0, start_L:start_L+L] = msa_orig[0] 
+             msa[0, start_L:start_L+L] = msa_orig[0]
              msa[start_N:start_N+N, start_L:start_L+L] = msa_orig[1:]
              ins[0, start_L:start_L+L] = ins_orig[0]
              ins[start_N:start_N+N, start_L:start_L+L] = ins_orig[1:]
@@ -449,18 +449,18 @@ def merge_a3m_homo(msa_orig, ins_orig, nmer, mode="default"):
          start = L
 
          for i_c in range(1,nmer):
-             msa[0, start:start+L] = msa_orig[0] 
+             msa[0, start:start+L] = msa_orig[0]
              msa[N:, start:start+L] = msa_orig[1:]
              ins[0, start:start+L] = ins_orig[0]
              ins[N:, start:start+L] = ins_orig[1:]
-             start += L        
+             start += L
 
      return {"msa": msa, "ins": ins}
 
 def merge_msas(a3m_list, L_s):
     """
     takes a list of a3m dictionaries with keys msa, ins and a list of protein lengths and creates a
-    combined MSA 
+    combined MSA
     """
     seen = set()
     taxIDs = []
@@ -471,7 +471,7 @@ def merge_msas(a3m_list, L_s):
     for i in range(1, len(a3m_list)):
         a3mB = a3m_list[i]
         pair_taxIDs = set(taxIDs).intersection(set(a3mB["taxID"]))
-        if a3mB["hash"] in seen or len(pair_taxIDs) < 5: #homomer/not enough pairs 
+        if a3mB["hash"] in seen or len(pair_taxIDs) < 5: #homomer/not enough pairs
             a3mA = {"msa": msaA, "ins": insA}
             L_s_to_merge = [sum(L_s[:i]), L_s[i]]
             a3mA = merge_a3m_hetero(a3mA, a3mB, L_s_to_merge)
@@ -491,9 +491,9 @@ def merge_msas(a3m_list, L_s):
             paired_msaB = torch.full((msaA.shape[0], L_s[i]), 20).long() # (N_seq_A, L_B)
             paired_msaB[final_pairsA] = msaB[final_pairsB]
             msaA = torch.cat([msaA, paired_msaB], dim=1)
-            insA = torch.zeros_like(msaA) # paired MSAs in our dataset dont have insertions 
+            insA = torch.zeros_like(msaA) # paired MSAs in our dataset dont have insertions
         seen.update(a3mB["hash"])
-        
+
     return msaA, insA
 
 def remove_all_gap_seqs(a3m):
@@ -508,13 +508,13 @@ def join_msas_by_taxid(a3mA, a3mB, idx_overlap=None):
     taxonomic ID. If more than 1 sequence exists in both MSAs with the same tax
     ID, only the sequence with the highest sequence identity to the query (1st
     sequence in MSA) will be paired.
-    
+
     Sequences that aren't paired will be padded and added to the bottom of the
     joined MSA.  If a subregion of the input MSAs overlap (represent the same
     chain), the subregion residue indices can be given as `idx_overlap`, and
     the overlap region of the unpaired sequences will be included in the joined
     MSA.
-    
+
     Parameters
     ----------
     a3mA : dict
@@ -544,7 +544,7 @@ def join_msas_by_taxid(a3mA, a3mB, idx_overlap=None):
             "(i.e. residue range should include 0 or a3mB['msa'].shape[1])"
     else:
         i1B_new, i2B_new = (0, L_B)
-        
+
     # pair sequences
     taxids_shared = a3mA['taxid'][np.isin(a3mA['taxid'],a3mB['taxid'])]
     i_pairedA, i_pairedB = [], []
@@ -603,7 +603,7 @@ def join_msas_by_taxid(a3mA, a3mB, idx_overlap=None):
 
     # label "fully paired" sequences (a row of MSA that was never padded with gaps)
     # output seq is fully paired if seqs A & B both started out as paired and were paired to
-    # each other on tax ID. 
+    # each other on tax ID.
     # NOTE: there is a rare edge case that is ignored here for simplicity: if
     # pMSA 0+1 and 1+2 are joined and then joined to 2+3, a seq that exists in
     # 0+1 and 2+3 but NOT 1+2 will become fully paired on the last join but
@@ -630,7 +630,7 @@ def load_minimal_multi_msa(hash_list, taxid_list, Ls, params):
 
     Parameters
     ----------
-    hash_list : list of str 
+    hash_list : list of str
         Hashes of MSAs to load and join. Must not contain duplicates.
     taxid_list : list of str
         Taxonomic IDs of query sequences of each input MSA.
@@ -640,7 +640,7 @@ def load_minimal_multi_msa(hash_list, taxid_list, Ls, params):
     Returns
     -------
     a3m_out : dict
-        Multi-MSA with all input MSAs. Keys: `msa`,`ins` [torch.Tensor (N_seq, L)], 
+        Multi-MSA with all input MSAs. Keys: `msa`,`ins` [torch.Tensor (N_seq, L)],
         `taxid` [np.array (Nseq,)], `is_paired` [torch.Tensor (N_seq,)]
     hashes_out : list of str
         Hashes of MSAs in the order that they are joined in `a3m_out`.
@@ -652,10 +652,10 @@ def load_minimal_multi_msa(hash_list, taxid_list, Ls, params):
     assert(len(hash_list)==len(set(hash_list))), 'Input MSA hashes must be unique'
 
     # the lists below are constructed such that `a3m_list[i_a3m]` is a multi-MSA
-    # comprising sub-MSAs whose indices in the input lists are 
+    # comprising sub-MSAs whose indices in the input lists are
     # `i_in = idx_list_groups[i_a3m][i_submsa]`, i.e. the sub-MSA hashes are
     # `hash_list[i_in]` and lengths are `Ls[i_in]`.
-    # Each sub-MSA spans a region of its multi-MSA `a3m_list[i_a3m][:,i_start:i_end]`, 
+    # Each sub-MSA spans a region of its multi-MSA `a3m_list[i_a3m][:,i_start:i_end]`,
     # where `(i_start,i_end) = res_range_groups[i_a3m][i_submsa]`
     a3m_list = []         # list of multi-MSAs
     idx_list_groups = []  # list of lists of indices of input chains making up each multi-MSA
@@ -676,7 +676,7 @@ def load_minimal_multi_msa(hash_list, taxid_list, Ls, params):
 
         # a paired MSA exists
         if taxid_list[i1]==taxid_list[i2]:
-            
+
             h1, h2 = hash_list[i1], hash_list[i2]
             fn = params['COMPL_DIR']+'/pMSA/'+h1[:3]+'/'+h2[:3]+'/'+h1+'_'+h2+'.a3m.gz'
 
@@ -699,10 +699,10 @@ def load_minimal_multi_msa(hash_list, taxid_list, Ls, params):
                     # which multi-MSA & sub-MSA has the hash with index `i1`?
                     i_a3m = np.where([i1 in group for group in idx_list_groups])[0][0]
                     i_submsa = np.where(np.array(idx_list_groups[i_a3m])==i1)[0][0]
-                    
+
                     idx_overlap = res_range_groups[i_a3m][i_submsa] + res_range1
                     a3m_list[i_a3m] = join_msas_by_taxid(a3m_list[i_a3m], a3m_new, idx_overlap)
-                    
+
                     idx_list_groups[i_a3m].append(i2)
                     L = res_range_groups[i_a3m][-1][1] # length of current multi-MSA
                     L_new = res_range2[1] - res_range2[0]
@@ -712,15 +712,15 @@ def load_minimal_multi_msa(hash_list, taxid_list, Ls, params):
                     # which multi-MSA & sub-MSA has the hash with index `i2`?
                     i_a3m = np.where([i2 in group for group in idx_list_groups])[0][0]
                     i_submsa = np.where(np.array(idx_list_groups[i_a3m])==i2)[0][0]
-                    
+
                     idx_overlap = res_range_groups[i_a3m][i_submsa] + res_range2
                     a3m_list[i_a3m] = join_msas_by_taxid(a3m_list[i_a3m], a3m_new, idx_overlap)
-                    
+
                     idx_list_groups[i_a3m].append(i1)
                     L = res_range_groups[i_a3m][-1][1] # length of current multi-MSA
                     L_new = res_range1[1] - res_range1[0]
                     res_range_groups[i_a3m].append((L, L+L_new))
-                    
+
     # add unpaired MSAs
     # ungroup hash indices now, since we're done making multi-MSAs
     idx_list = [x for group in idx_list_groups for x in group]
@@ -728,20 +728,20 @@ def load_minimal_multi_msa(hash_list, taxid_list, Ls, params):
         if i not in idx_list:
             fn = params['PDB_DIR'] + '/a3m/' + hash_list[i][:3] + '/' + hash_list[i] + '.a3m.gz'
             msa, ins, taxid = parse_a3m(fn)
-            a3m_new = dict(msa=torch.tensor(msa), ins=torch.tensor(ins), 
+            a3m_new = dict(msa=torch.tensor(msa), ins=torch.tensor(ins),
                            taxid=taxid, is_paired=torch.ones(msa.shape[0]).bool())
             a3m_list.append(a3m_new)
             idx_list.append(i)
-            
+
     Ls_out = [Ls[i] for i in idx_list]
     hashes_out = [hash_list[i] for i in idx_list]
-            
+
     # join multi-MSAs & unpaired MSAs
     a3m_out = a3m_list[0]
     for i in range(1, len(a3m_list)):
         a3m_out = join_msas_by_taxid(a3m_out, a3m_list[i])
 
-    return a3m_out, hashes_out, Ls_out    
+    return a3m_out, hashes_out, Ls_out
 
 
 def expand_multi_msa(a3m, hashes_in, hashes_out, Ls_in, Ls_out):
@@ -832,7 +832,7 @@ def expand_multi_msa(a3m, hashes_in, hashes_out, Ls_in, Ls_out):
         ins_out[i1_seq_out:i2_seq_out, i1_res_out:i2_res_out] = ins_in[1:, i1_res_in:i2_res_in]
 
     # only 1st oligomeric repeat can be fully paired
-    is_paired_out = torch.cat([a3m['is_paired'], torch.zeros((N_out-N_in,)).bool()]) 
+    is_paired_out = torch.cat([a3m['is_paired'], torch.zeros((N_out-N_in,)).bool()])
 
     a3m_out = dict(msa=msa_out, ins=ins_out, is_paired=is_paired_out)
     a3m_out = remove_all_gap_seqs(a3m_out)
@@ -883,7 +883,7 @@ def choose_multimsa_clusters(msa_seq_is_paired, params):
         return msa_seed_clus
 
 
-#fd 
+#fd
 def get_bond_distances(bond_feats):
     atom_bonds = (bond_feats > 0)*(bond_feats<5)
     dist_matrix = scipy.sparse.csgraph.shortest_path(atom_bonds.long().numpy(), directed=False)
@@ -894,14 +894,14 @@ def get_bond_distances(bond_feats):
 def get_pdb(pdbfilename, plddtfilename, item, lddtcut, sccut):
     xyz, mask, res_idx = parse_pdb(pdbfilename)
     plddt = np.load(plddtfilename)
-    
+
     # update mask info with plddt (ignore sidechains if plddt < 90.0)
     mask_lddt = np.full_like(mask, False)
     mask_lddt[plddt > sccut] = True
     mask_lddt[:,:5] = True
     mask = np.logical_and(mask, mask_lddt)
     mask = np.logical_and(mask, (plddt > lddtcut)[:,None])
-    
+
     return {'xyz':torch.tensor(xyz), 'mask':torch.tensor(mask), 'idx': torch.tensor(res_idx), 'label':item}
 
 def get_msa(a3mfilename, item, maxseq=5000):
