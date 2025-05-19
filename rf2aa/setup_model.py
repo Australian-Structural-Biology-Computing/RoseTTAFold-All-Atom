@@ -34,7 +34,7 @@ class Trainer:
 
         assert self.config.ddp_params.batch_size == 1, "batch size is assumed to be 1"
         if self.config.experiment.output_dir is not None:
-            self.output_dir = self.config.experiment.output_dir 
+            self.output_dir = self.config.experiment.output_dir
         else:
             self.output_dir = "models/"
         if not os.path.exists(self.output_dir):

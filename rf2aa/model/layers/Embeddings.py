@@ -17,19 +17,19 @@ class MSA_emb(nn.Module):
                  minpos=-32, maxpos=32, maxpos_atom=8, p_drop=0.1, use_same_chain=False, enable_same_chain=False):
         if (d_init==0):
             d_init = 2*ChemData().NAATOKENS+2+2
-            
+
         super(MSA_emb, self).__init__()
         self.emb = nn.Linear(d_init, d_msa) # embedding for general MSA
         self.emb_q = nn.Embedding(ChemData().NAATOKENS, d_msa) # embedding for query sequence -- used for MSA embedding
         self.emb_left = nn.Embedding(ChemData().NAATOKENS, d_pair) # embedding for query sequence -- used for pair embedding
         self.emb_right = nn.Embedding(ChemData().NAATOKENS, d_pair) # embedding for query sequence -- used for pair embedding
         self.emb_state = nn.Embedding(ChemData().NAATOKENS, d_state)
-        self.pos = PositionalEncoding2D(d_pair, minpos=minpos, maxpos=maxpos, 
+        self.pos = PositionalEncoding2D(d_pair, minpos=minpos, maxpos=maxpos,
                                         maxpos_atom=maxpos_atom, p_drop=p_drop, use_same_chain=use_same_chain,
                                         enable_same_chain=enable_same_chain)
         self.enable_same_chain = enable_same_chain
         self.reset_parameter()
-    
+
     def reset_parameter(self):
         self.emb = init_lecun_normal(self.emb)
         self.emb_q = init_lecun_normal(self.emb_q)
@@ -74,7 +74,7 @@ class MSA_emb(nn.Module):
 
         msa = self._msa_emb(msa, seq)
 
-        # pair embedding 
+        # pair embedding
         pair = self._pair_emb(seq, idx, bond_feats, dist_matrix, same_chain=same_chain)
         # state embedding
         state = self._state_emb(seq)
@@ -90,7 +90,7 @@ class MSA_emb_nostate(MSA_emb):
     def forward(self, msa, seq, idx, bond_feats, dist_matrix):
         msa = self._msa_emb(msa, seq)
         pair = self._pair_emb(seq, idx, bond_feats, dist_matrix)
-        return msa, pair, None 
+        return msa, pair, None
 
 class Extra_emb(nn.Module):
     # Get initial seed MSA embedding
@@ -101,10 +101,10 @@ class Extra_emb(nn.Module):
         self.emb = nn.Linear(d_init, d_msa) # embedding for general MSA
         self.emb_q = nn.Embedding(ChemData().NAATOKENS, d_msa) # embedding for query sequence
         #self.drop = nn.Dropout(p_drop)
-        
+
 
         self.reset_parameter()
-    
+
     def reset_parameter(self):
         self.emb = init_lecun_normal(self.emb)
         nn.init.zeros_(self.emb.bias)
@@ -133,7 +133,7 @@ class Bond_emb(nn.Module):
         self.emb = nn.Linear(d_init, d_pair)
 
         self.reset_parameter()
-    
+
     def reset_parameter(self):
         self.emb = init_lecun_normal(self.emb)
         nn.init.zeros_(self.emb.bias)
@@ -150,10 +150,10 @@ class TemplatePairStack(nn.Module):
         self.n_block = n_block
         self.proj_t1d = nn.Linear(d_t1d, d_state)
 
-        proc_s = [PairStr2Pair(d_pair=d_templ, 
-                               n_head=n_head, 
-                               d_hidden=d_hidden, 
-                               d_state=d_state, 
+        proc_s = [PairStr2Pair(d_pair=d_templ,
+                               n_head=n_head,
+                               d_hidden=d_hidden,
+                               d_state=d_state,
                                p_drop=p_drop,
                                symmetrize_repeats=symmetrize_repeats,
                                repeat_length=repeat_length,
@@ -177,7 +177,7 @@ class TemplatePairStack(nn.Module):
         for i_block in range(self.n_block):
             if use_checkpoint:
                 templ = checkpoint.checkpoint(
-                    create_custom_forward(self.block[i_block]), 
+                    create_custom_forward(self.block[i_block]),
                     templ, rbf_feat, state, p2p_crop,
                     use_reentrant=True
                 )
@@ -194,10 +194,10 @@ def copy_main_2d(pair, Leff, idx):
     start = idx*Leff
     end   = (idx+1)*Leff
 
-    # grab the main block 
+    # grab the main block
     main  = torch.clone( pair[..., start:end, start:end, :] )
 
-    # copy it around the main diag 
+    # copy it around the main diag
     L = pair.shape[-2]
     assert L%Leff == 0
     N = L//Leff
@@ -208,21 +208,21 @@ def copy_main_2d(pair, Leff, idx):
 
         pair[...,start:stop, start:stop, :] = main
 
-    return pair 
+    return pair
 
 
 def copy_main_1d(single, Leff, idx):
     """
     Copies the "main unit" of a block in generic 1D representation of shape (...,L,h)
-    to all other (non-main) blocks 
-    
+    to all other (non-main) blocks
+
     Parameters:
         single (torch.tensor, required): Shape [...,L,h] "1D" tensor
     """
     main_start = idx*Leff
     main_end   = (idx+1)*Leff
 
-    # grab main block 
+    # grab main block
     main = torch.clone(single[..., main_start:main_end, :])
 
     # copy it around
@@ -248,11 +248,11 @@ class Templ_emb(nn.Module):
     #   t1d:
     #   - tiled AA sequence (20 standard aa + gap)
     #   - confidence (1)
-    #   
-    def __init__(self, d_t1d=0, d_t2d=67+1, d_tor=0, d_pair=128, d_state=32, 
+    #
+    def __init__(self, d_t1d=0, d_t2d=67+1, d_tor=0, d_pair=128, d_state=32,
                  n_block=2, d_templ=64,
                  n_head=4, d_hidden=16, p_drop=0.25,
-                 symmetrize_repeats=False, repeat_length=None, symmsub_k=1, sym_method='mean', 
+                 symmetrize_repeats=False, repeat_length=None, symmsub_k=1, sym_method='mean',
                  main_block=None, copy_main_block=None, additional_dt1d=0):
         if d_t1d==0:
             d_t1d=(ChemData().NAATOKENS-1)+1
@@ -273,9 +273,9 @@ class Templ_emb(nn.Module):
                                              d_hidden=d_hidden, d_t1d=d_t1d, d_state=d_state, p_drop=p_drop,
                                              symmetrize_repeats=symmetrize_repeats, repeat_length=repeat_length,
                                              symmsub_k=symmsub_k, sym_method=sym_method)
-        
+
         self.attn = Attention(d_pair, d_templ, n_head, d_hidden, d_pair, p_drop=p_drop)
-        
+
         # process torsion angles
         self.emb_t1d = nn.Linear(d_t1d+d_tor, d_templ)
         self.proj_t1d = nn.Linear(d_templ, d_templ)
@@ -284,14 +284,14 @@ class Templ_emb(nn.Module):
         self.attn_tor = Attention(d_state, d_templ, n_head, d_hidden, d_state, p_drop=p_drop)
 
         self.reset_parameter()
-    
+
     def reset_parameter(self):
         self.emb = init_lecun_normal(self.emb)
         nn.init.zeros_(self.emb.bias)
 
         nn.init.kaiming_normal_(self.emb_t1d.weight, nonlinearity='relu')
         nn.init.zeros_(self.emb_t1d.bias)
-        
+
         self.proj_t1d = init_lecun_normal(self.proj_t1d)
         nn.init.zeros_(self.proj_t1d.bias)
 
@@ -329,7 +329,7 @@ class Templ_emb(nn.Module):
         # this looks a lot like a bug but it is not
         # mask_t has already been updated by same_chain in the train_EMA script so pairwise distances between
         # protein chains are ignored
-        rbf_feat = self._get_templ_rbf(xyz_t, mask_t) 
+        rbf_feat = self._get_templ_rbf(xyz_t, mask_t)
 
         # process each template pair feature
         templ = self.templ_stack(templ, rbf_feat, t1d, use_checkpoint=use_checkpoint, p2p_crop=p2p_crop) # (B, T, L,L, d_templ)
@@ -338,7 +338,7 @@ class Templ_emb(nn.Module):
         if self.copy_main_block:
             assert not (self.main_block is None)
             assert self.symmetrize_repeats
-            # copy the main repeat unit internally down the pair representation diagonal 
+            # copy the main repeat unit internally down the pair representation diagonal
             templ = copy_main_2d(templ, self.repeat_length, self.main_block)
 
         # Prepare 1D template torsion angle features
@@ -348,10 +348,10 @@ class Templ_emb(nn.Module):
 
         # DJ - repeat protein symmetrization (1D)
         if self.copy_main_block:
-            # already made assertions above 
-            # copy main unit down single rep 
+            # already made assertions above
+            # copy main unit down single rep
             t1d = copy_main_1d(t1d, self.repeat_length, self.main_block)
-        
+
         # mixing query state features to template state features
         state = state.reshape(B*L, 1, -1)
         t1d = t1d.permute(0,2,1,3).reshape(B*L, T, -1)
@@ -388,9 +388,9 @@ class Recycling(nn.Module):
         self.proj_dist = nn.Linear(d_rbf, d_pair)
         self.norm_pair = nn.LayerNorm(d_pair)
         self.norm_msa = nn.LayerNorm(d_msa)
-        
+
         self.reset_parameter()
-    
+
     def reset_parameter(self):
         #self.emb_rbf = init_lecun_normal(self.emb_rbf)
         #nn.init.zeros_(self.emb_rbf.bias)
@@ -410,7 +410,7 @@ class Recycling(nn.Module):
         if mask_recycle != None:
             dist_CA = mask_recycle[...,None].float()*dist_CA
 
-        pair = pair + self.proj_dist(dist_CA) 
+        pair = pair + self.proj_dist(dist_CA)
 
         return msa, pair, state # state is just zeros
 
@@ -424,7 +424,7 @@ class RecyclingAllFeatures(nn.Module):
         self.norm_state = nn.LayerNorm(d_state)
 
         self.reset_parameter()
-    
+
     def reset_parameter(self):
         self.proj_dist = init_lecun_normal(self.proj_dist)
         nn.init.zeros_(self.proj_dist.bias)
@@ -437,7 +437,7 @@ class RecyclingAllFeatures(nn.Module):
 
         left = state.unsqueeze(2).expand(-1,-1,L,-1)
         right = state.unsqueeze(1).expand(-1,L,-1,-1)
-        
+
         Ca_or_P = xyz[:,:,1].contiguous()
 
         dist = rbf(torch.cdist(Ca_or_P, Ca_or_P))

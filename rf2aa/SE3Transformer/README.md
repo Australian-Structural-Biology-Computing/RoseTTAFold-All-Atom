@@ -29,12 +29,12 @@ This repository provides a script and recipe to train the SE(3)-Transformer mode
         * [Training performance benchmark](#training-performance-benchmark)
         * [Inference performance benchmark](#inference-performance-benchmark)
     * [Results](#results)
-        * [Training accuracy results](#training-accuracy-results)                         
-            * [Training accuracy: NVIDIA DGX A100 (8x A100 80GB)](#training-accuracy-nvidia-dgx-a100-8x-a100-80gb)  
+        * [Training accuracy results](#training-accuracy-results)
+            * [Training accuracy: NVIDIA DGX A100 (8x A100 80GB)](#training-accuracy-nvidia-dgx-a100-8x-a100-80gb)
             * [Training accuracy: NVIDIA DGX-1 (8x V100 16GB)](#training-accuracy-nvidia-dgx-1-8x-v100-16gb)
             * [Training stability test](#training-stability-test)
         * [Training performance results](#training-performance-results)
-            * [Training performance: NVIDIA DGX A100 (8x A100 80GB)](#training-performance-nvidia-dgx-a100-8x-a100-80gb) 
+            * [Training performance: NVIDIA DGX A100 (8x A100 80GB)](#training-performance-nvidia-dgx-a100-8x-a100-80gb)
             * [Training performance: NVIDIA DGX-1 (8x V100 16GB)](#training-performance-nvidia-dgx-1-8x-v100-16gb)
         * [Inference performance results](#inference-performance-results)
             * [Inference performance: NVIDIA DGX A100 (1x A100 80GB)](#inference-performance-nvidia-dgx-a100-1x-a100-80gb)
@@ -54,12 +54,12 @@ A mathematical guarantee of equivariance is important to ensure stable and predi
 
 
 The model is based on the following publications:
-- [SE(3)-Transformers: 3D Roto-Translation Equivariant Attention Networks](https://arxiv.org/abs/2006.10503) (NeurIPS 2020) by Fabian B. Fuchs, Daniel E. Worrall, et al. 
+- [SE(3)-Transformers: 3D Roto-Translation Equivariant Attention Networks](https://arxiv.org/abs/2006.10503) (NeurIPS 2020) by Fabian B. Fuchs, Daniel E. Worrall, et al.
 - [Tensor field networks: Rotation- and translation-equivariant neural networks for 3D point clouds](https://arxiv.org/abs/1802.08219) by Nathaniel Thomas, Tess Smidt, et al.
 
 A follow-up paper explains how this model can be used iteratively, for example, to predict or refine protein structures:
 
-- [Iterative SE(3)-Transformers](https://arxiv.org/abs/2102.13419) by Fabian B. Fuchs, Daniel E. Worrall, et al. 
+- [Iterative SE(3)-Transformers](https://arxiv.org/abs/2102.13419) by Fabian B. Fuchs, Daniel E. Worrall, et al.
 
 Just like [the official implementation](https://github.com/FabianFuchsML/se3-transformer-public), this implementation uses [PyTorch](https://pytorch.org/) and the [Deep Graph Library (DGL)](https://www.dgl.ai/).
 
@@ -137,7 +137,7 @@ The following performance optimizations were implemented in this model:
 **Normalization optimizations**
 
 - The equivariant normalization layer is optimized from multiple layer normalizations to a group normalization on fused norms when certain conditions are met
-    
+
 
 
 Competitive training results and analysis are provided for the following hyperparameters (identical to the ones in the original publication):
@@ -153,13 +153,13 @@ Competitive training results and analysis are provided for the following hyperpa
 
 ### Feature support matrix
 
-This model supports the following features:: 
+This model supports the following features::
 
-| Feature               | SE(3)-Transformer                
+| Feature               | SE(3)-Transformer
 |-----------------------|--------------------------
-|Automatic mixed precision (AMP)   |         Yes 
-|Distributed data parallel (DDP)   |         Yes 
-         
+|Automatic mixed precision (AMP)   |         Yes
+|Distributed data parallel (DDP)   |         Yes
+
 #### Features
 
 
@@ -174,7 +174,7 @@ This implementation uses the native PyTorch AMP implementation of mixed precisio
 ### Mixed precision training
 
 Mixed precision is the combined use of different numerical precisions in a computational method. [Mixed precision](https://arxiv.org/abs/1710.03740) training offers significant computational speedup by performing operations in half-precision format while storing minimal information in single-precision to retain as much information as possible in critical parts of the network. Since the introduction of [Tensor Cores](https://developer.nvidia.com/tensor-cores) in NVIDIA Volta, and following with both the NVIDIA Turing and NVIDIA Ampere Architectures, significant training speedups are experienced by switching to mixed precision -- up to 3x overall speedup on the most arithmetically intense model architectures. Using [mixed precision training](https://docs.nvidia.com/deeplearning/performance/mixed-precision-training/index.html) previously required two steps:
-1.  Porting the model to use the FP16 data type where appropriate.    
+1.  Porting the model to use the FP16 data type where appropriate.
 2.  Adding loss scaling to preserve small gradient values.
 
 AMP enables mixed precision training on NVIDIA Volta, NVIDIA Turing, and NVIDIA Ampere GPU architectures automatically. The PyTorch framework code makes all necessary model changes internally.
@@ -193,7 +193,7 @@ To enable mixed precision, you can simply use the `--amp` flag when running the 
 
 #### Enabling TF32
 
-TensorFloat-32 (TF32) is the new math mode in [NVIDIA A100](https://www.nvidia.com/en-us/data-center/a100/) GPUs for handling the matrix math, also called tensor operations. TF32 running on Tensor Cores in A100 GPUs can provide up to 10x speedups compared to single-precision floating-point math (FP32) on NVIDIA Volta GPUs. 
+TensorFloat-32 (TF32) is the new math mode in [NVIDIA A100](https://www.nvidia.com/en-us/data-center/a100/) GPUs for handling the matrix math, also called tensor operations. TF32 running on Tensor Cores in A100 GPUs can provide up to 10x speedups compared to single-precision floating-point math (FP32) on NVIDIA Volta GPUs.
 
 TF32 Tensor Cores can speed up networks using FP32, typically with no loss of accuracy. It is more robust than FP16 for models that require a high dynamic range for weights or activations.
 
@@ -258,7 +258,7 @@ For more information about how to get started with NGC containers, refer to the 
 - [Getting Started Using NVIDIA GPU Cloud](https://docs.nvidia.com/ngc/ngc-getting-started-guide/index.html)
 - [Accessing And Pulling From The NGC Container Registry](https://docs.nvidia.com/deeplearning/frameworks/user-guide/index.html#accessing_registry)
 - [Running PyTorch](https://docs.nvidia.com/deeplearning/frameworks/pytorch-release-notes/running.html#running)
-  
+
 For those unable to use the PyTorch NGC container to set up the required environment or create your own container, refer to the versioned [NVIDIA Container Support Matrix](https://docs.nvidia.com/deeplearning/frameworks/support-matrix/index.html).
 
 ## Quick Start Guide
@@ -270,7 +270,7 @@ To train your model using mixed or TF32 precision with Tensor Cores or FP32, per
     git clone https://github.com/NVIDIA/DeepLearningExamples
     cd DeepLearningExamples/PyTorch/DrugDiscovery/SE3Transformer
     ```
-   
+
 2.  Build the `se3-transformer` PyTorch NGC container.
     ```
     docker build -t se3-transformer .
@@ -469,7 +469,7 @@ The following sections provide details on how we achieved our performance and ac
 
 Our results were obtained by running the `scripts/train.sh` training script in the PyTorch 21.07 NGC container on NVIDIA DGX A100 (8x A100 80GB) GPUs.
 
-| GPUs    | Batch size / GPU    | Absolute error - TF32  | Absolute error - mixed precision  |   Time to train - TF32  |  Time to train - mixed precision | Time to train speedup (mixed precision to TF32) |       
+| GPUs    | Batch size / GPU    | Absolute error - TF32  | Absolute error - mixed precision  |   Time to train - TF32  |  Time to train - mixed precision | Time to train speedup (mixed precision to TF32) |
 |:------------------:|:----------------------:|:--------------------:|:------------------------------------:|:---------------------------------:|:----------------------:|:----------------------------------------------:|
 |  1                 |    240                   |           0.03456                            |        0.03460                                |        1h23min      |    1h03min                |    1.32x              |
 |  8                 |    240                   |           0.03417                            |        0.03424                                |        15min          |    12min                |    1.25x              |
@@ -479,7 +479,7 @@ Our results were obtained by running the `scripts/train.sh` training script in t
 
 Our results were obtained by running the `scripts/train.sh` training script in the PyTorch 21.07 NGC container on NVIDIA DGX-1 with (8x V100 16GB) GPUs.
 
-| GPUs    | Batch size / GPU    | Absolute error - FP32  | Absolute error - mixed precision  |   Time to train - FP32  |  Time to train - mixed precision | Time to train speedup (mixed precision to FP32)  |      
+| GPUs    | Batch size / GPU    | Absolute error - FP32  | Absolute error - mixed precision  |   Time to train - FP32  |  Time to train - mixed precision | Time to train speedup (mixed precision to FP32)  |
 |:------------------:|:----------------------:|:--------------------:|:------------------------------------:|:---------------------------------:|:----------------------:|:----------------------------------------------:|
 |  1                 |    240                   |           0.03432                            |        0.03439                                |         2h25min         |    1h33min                |    1.56x              |
 |  8                 |    240                   |           0.03380                            |        0.03495                                |        29min          |    20min                |    1.45x              |

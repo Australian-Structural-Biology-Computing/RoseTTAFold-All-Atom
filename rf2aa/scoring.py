@@ -25,7 +25,7 @@ type2ljlk = {
     "ONH2":(1.548662,0.182924,-6.591644,3.5000,10.102000),
     "OOC":(1.492871,0.099873,-9.239832,3.5000,9.995600),
     "S":(1.975967,0.455970,-1.707229,3.5000,17.640000),
-    "SH1":(1.975967,0.455970,3.291643,3.5000,23.240000),  
+    "SH1":(1.975967,0.455970,3.291643,3.5000,23.240000),
     "Nbb":(1.802452,0.161725,-9.969494,3.5000,15.992000),
     "CAbb":(2.011760,0.062642,2.533791,3.5000,12.137000),
     "CObb":(1.916661,0.141799,3.104248,3.5000,13.221000),
@@ -38,7 +38,7 @@ type2ljlk = {
     "Haro":(1.374914,0.015909,0.0000,3.5000,0.0000),
     "Hpol":(0.901681,0.005000,0.0000,3.5000,0.0000),
     "HS":(0.363887,0.050836,0.0000,3.5000,0.0000),
-    "genAl":(1,0.1, 0.0000, 0.0000, 0.0000), 
+    "genAl":(1,0.1, 0.0000, 0.0000, 0.0000),
     "genAs":(1, 0.1, 0.0000, 0.0000, 0.0000),
     "genAu":(1, 0.1, 0.0000, 0.0000, 0.0000),
     "genB": (1,0.1, 0.0000, 0.0000, 0.0000),
@@ -104,7 +104,7 @@ type2hb = {
     "CH2":HbAtom.NO,  "CH3":HbAtom.NO,  "aroC":HbAtom.NO, "Ntrp":HbAtom.DO,
     "Nhis":HbAtom.AC, "NtrR":HbAtom.DO, "NH2O":HbAtom.DO, "Nlys":HbAtom.DO,
     "Narg":HbAtom.DO, "Npro":HbAtom.NO, "OH":HbAtom.DA,   "OHY":HbAtom.DA,
-    "ONH2":HbAtom.AC, "OOC":HbAtom.AC,  "S":HbAtom.NO,    "SH1":HbAtom.NO,  
+    "ONH2":HbAtom.AC, "OOC":HbAtom.AC,  "S":HbAtom.NO,    "SH1":HbAtom.NO,
     "Nbb":HbAtom.DO,  "CAbb":HbAtom.NO, "CObb":HbAtom.NO, "OCbb":HbAtom.AC,
     "HNbb":HbAtom.HP, "Hapo":HbAtom.NO, "Haro":HbAtom.NO, "Hpol":HbAtom.HP,
     "HS":HbAtom.HP, # HP in rosetta(?)
@@ -118,8 +118,8 @@ type2hb = {
     "genO": HbAtom.DA, "genOs": HbAtom.NO, "genP": HbAtom.NO,  "genPb": HbAtom.NO,
     "genPd": HbAtom.NO, "genPr": HbAtom.NO, "genPt": HbAtom.NO, "genRe": HbAtom.NO,
     "genRh": HbAtom.NO, "genRu": HbAtom.NO, "genS": HbAtom.DA, "genSb": HbAtom.NO,
-    "genSe": HbAtom.NO, "genSi": HbAtom.NO,"genSn": HbAtom.NO,"genTb": HbAtom.NO, 
-    "genTe": HbAtom.NO, "genU": HbAtom.NO, "genW": HbAtom.NO, "genV": HbAtom.NO, 
+    "genSe": HbAtom.NO, "genSi": HbAtom.NO,"genSn": HbAtom.NO,"genTb": HbAtom.NO,
+    "genTe": HbAtom.NO, "genU": HbAtom.NO, "genW": HbAtom.NO, "genV": HbAtom.NO,
     "genY": HbAtom.NO, "genZn": HbAtom.NO, "genATM": HbAtom.NO, # masked
 }
 

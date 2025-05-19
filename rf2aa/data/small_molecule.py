@@ -16,7 +16,7 @@ def load_small_molecule(input_file, input_type, model_runner):
     obmol, msa, ins, xyz, mask = parse_mol(
         input_file, filetype=input_type, string=is_string, generate_conformer=True
     )
-    return compute_features_from_obmol(obmol, msa, xyz, model_runner) 
+    return compute_features_from_obmol(obmol, msa, xyz, model_runner)
 
 def compute_features_from_obmol(obmol, msa, xyz, model_runner):
     L = msa.shape[0]

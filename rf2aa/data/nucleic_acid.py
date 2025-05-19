@@ -32,7 +32,7 @@ def load_nucleic_acid(fasta_fn, input_type, model_runner):
     bond_feats = get_protein_bond_feats(L)
     chirals = torch.zeros(0, 5)
     atom_frames = torch.zeros(0, 3, 2)
-    
+
     return RawInputData(
         torch.from_numpy(msa),
         torch.from_numpy(ins),

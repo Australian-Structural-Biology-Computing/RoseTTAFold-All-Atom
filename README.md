@@ -5,17 +5,17 @@ The purpose of this fork is to make RFAA more portable for adding to pipelines s
 Installation using apptainer
 ---
 1. Ensure you have apptainer installed.
-2. Download the RoseTTAFold-All-Atom.def file:  
+2. Download the RoseTTAFold-All-Atom.def file:
    ```
    wget https://raw.githubusercontent.com/Australian-Structural-Biology-Computing/RoseTTAFold-All-Atom/main/RoseTTAFold-All-Atom.def
    ```
-4. Using apptainer build the RoseTTAFold-All-Atom.sif image.
+4. Using apptainer build the RoseTTAFold-All-Atom.sif image. You need a GPU available; hence the --nv flag.
    ```
-   apptainer build RoseTTAFold-All-Atom.sif RoseTTAFold-All-Atom.def
+   apptainer build --nv RoseTTAFold-All-Atom.sif RoseTTAFold-All-Atom.def
    ```
 6. Ensure you have copies of all the databases and paper weights as listed below in the original instructions.
 
-Running RFAA within the container 
+Running RFAA within the container
 ---
 1. Copy the base.yaml to your working directory and edit it to point hhdb to your pdbd100 database and RFAA_paper_weights.pt if needed.
 2. Run apptainer as follows (replace the paths, including your relevant db prefix):
@@ -44,9 +44,9 @@ Code for RoseTTAFold All-Atom
 <p align="right">
   <img style="float: right" src="./img/RFAA.png" alt="alt text" width="600px" align="right"/>
 </p>
-RoseTTAFold All-Atom is a biomolecular structure prediction neural network that can predict a broad range of biomolecular assemblies including proteins, nucleic acids, small molecules, covalent modifications and metals as outlined in the <a href='https://www.science.org/doi/10.1126/science.adl2528'>RFAA paper</a>. 
+RoseTTAFold All-Atom is a biomolecular structure prediction neural network that can predict a broad range of biomolecular assemblies including proteins, nucleic acids, small molecules, covalent modifications and metals as outlined in the <a href='https://www.science.org/doi/10.1126/science.adl2528'>RFAA paper</a>.
 
-RFAA is not accurate for all cases, but produces useful error estimates to allow users to identify accurate predictions. Below are the instructions for setting up and using the model. 
+RFAA is not accurate for all cases, but produces useful error estimates to allow users to identify accurate predictions. Below are the instructions for setting up and using the model.
 
 ## Table of Contents
 - [Setup/Installation](#set-up)
@@ -127,7 +127,7 @@ mv blast-2.2.26_bk/ blast-2.2.26
 <a id="inference-config"></a>
 ### Inference Configs Using Hydra
 
-We use a library called Hydra to compose config files for predictions. The actual script that runs the model is in `rf2aa/run_inference.py` and default parameters that were used to train the model are in `rf2aa/config/inference/base.yaml`. We highly suggest using the default parameters since those are closest to the training task for RFAA but we have found that increasing loader_params.MAXCYCLE=10 (default set to 4) gives better results for hard cases (as noted in the paper). 
+We use a library called Hydra to compose config files for predictions. The actual script that runs the model is in `rf2aa/run_inference.py` and default parameters that were used to train the model are in `rf2aa/config/inference/base.yaml`. We highly suggest using the default parameters since those are closest to the training task for RFAA but we have found that increasing loader_params.MAXCYCLE=10 (default set to 4) gives better results for hard cases (as noted in the paper).
 
 The general way to run the model is as follows:
 ```
@@ -140,7 +140,7 @@ The main inputs into the model are split into:
 - covalent bonds between protein chains and small molecule chains
 - modified or unnatural amino acids (COMING SOON)
 
-In the following sections, we will describe how to set up configs for different prediction tasks that we described in the paper. 
+In the following sections, we will describe how to set up configs for different prediction tasks that we described in the paper.
 
 <a id="protein-pred"></a>
 ### Predicting Protein Monomers
@@ -151,13 +151,13 @@ defaults:
   - base
 
 job_name: "7u7w_protein"
-protein_inputs: 
+protein_inputs:
   A:
     fasta_file: examples/protein/7u7w_A.fasta
 ```
 The first line indicates that this job inherits all the configurations from the base file (this should be true for all your inference jobs). Then you can optionally specify the job name (the default job_name is "structure_prediction" so we highly recommend specifying one).
 
-When specifying the fasta file for your protein, you might notice that it is nested within a mysterious "A" parameter. This represents a chain letter and is absolutely **required**, this is important when users are specifying multiple chains. 
+When specifying the fasta file for your protein, you might notice that it is nested within a mysterious "A" parameter. This represents a chain letter and is absolutely **required**, this is important when users are specifying multiple chains.
 
 Now to predict the sample monomer structure, run:
 ```
@@ -172,28 +172,28 @@ defaults:
   - base
 
 job_name: "7u7w_protein_nucleic"
-protein_inputs: 
-  A: 
+protein_inputs:
+  A:
     fasta_file: examples/protein/7u7w_A.fasta
-na_inputs: 
-  B: 
+na_inputs:
+  B:
     fasta: examples/nucleic_acid/7u7w_B.fasta
     input_type: "dna"
-  C: 
+  C:
     fasta: examples/nucleic_acid/7u7w_C.fasta
     input_type: "dna"
 ```
-Once again this config inherits the base config, defines a job name and provides a protein fasta file for chain A. To add double stranded DNA, you must add two more chain inputs for each strand (shown here as chains B and C). In this case, the allowed input types are dna and rna. 
+Once again this config inherits the base config, defines a job name and provides a protein fasta file for chain A. To add double stranded DNA, you must add two more chain inputs for each strand (shown here as chains B and C). In this case, the allowed input types are dna and rna.
 
-This repo currently does not support making RNA MSAs or pairing protein MSAs with RNA MSAs but this is functionality that we are keen to add. For now, please use RF-NA for modeling cases requiring paired protein-RNA MSAs. 
+This repo currently does not support making RNA MSAs or pairing protein MSAs with RNA MSAs but this is functionality that we are keen to add. For now, please use RF-NA for modeling cases requiring paired protein-RNA MSAs.
 
-Now, predict the example protein/NA complex. 
+Now, predict the example protein/NA complex.
 ```
 python -m rf2aa.run_inference --config-name nucleic_acid
 ```
 <a id="p-sm-complex"></a>
 ### Predicting Protein Small Molecule Complexes
-To predict protein small molecule complexes, the syntax to input the protein remains the same. Adding in the small molecule works similarly to other inputs. 
+To predict protein small molecule complexes, the syntax to input the protein remains the same. Adding in the small molecule works similarly to other inputs.
 Here is an example (from `rf2aa/config/inference/protein_sm.yaml`):
 ```
 defaults:
@@ -203,7 +203,7 @@ job_name: "3fap"
 protein_inputs:
   A:
     fasta_file: examples/protein/3fap_A.fasta
-  B: 
+  B:
     fasta_file: examples/protein/3fap_B.fasta
 
 sm_inputs:
@@ -211,7 +211,7 @@ sm_inputs:
     input: examples/small_molecule/ARD_ideal.sdf
     input_type: "sdf"
 ```
-Small molecule inputs are provided as sdf files or smiles strings and users are **required** to provide both an input and an input_type field for every small molecule that they want to provide. Metal ions can also be provided as sdf files or smiles strings. 
+Small molecule inputs are provided as sdf files or smiles strings and users are **required** to provide both an input and an input_type field for every small molecule that they want to provide. Metal ions can also be provided as sdf files or smiles strings.
 
 To predict the example:
 ```
@@ -227,17 +227,17 @@ defaults:
   - base
 
 job_name: "7u7w_protein_nucleic_sm"
-protein_inputs: 
-  A: 
+protein_inputs:
+  A:
     fasta_file: examples/protein/7u7w_A.fasta
-na_inputs: 
-  B: 
+na_inputs:
+  B:
     fasta: examples/nucleic_acid/7u7w_B.fasta
     input_type: "dna"
-  C: 
+  C:
     fasta: examples/nucleic_acid/7u7w_C.fasta
     input_type: "dna"
-sm_inputs: 
+sm_inputs:
   D:
     input: examples/small_molecule/XG4.sdf
     input_type: "sdf"
@@ -250,8 +250,8 @@ python -m rf2aa.run_inference --config-name protein_na_sm
 ### Predicting Covalently Modified Proteins
 Specifying covalent modifications is slightly more complicated for the following reasons.
 
-- Forming new covalent bonds can create or remove chiral centers. Since RFAA specifies chirality at input, the network needs to be provided with chirality information. Under the hood, chiral centers are identified by a package called Openbabel which does not always agree with chemical intuition. 
-- Covalent modifications often have "leaving groups", or chemical groups that leave both the protein and the modification upon modification. 
+- Forming new covalent bonds can create or remove chiral centers. Since RFAA specifies chirality at input, the network needs to be provided with chirality information. Under the hood, chiral centers are identified by a package called Openbabel which does not always agree with chemical intuition.
+- Covalent modifications often have "leaving groups", or chemical groups that leave both the protein and the modification upon modification.
 
 The way you input covalent bonds to RFAA is as a list of bonds between an atom on the protein and an atom on one of the input small molecules. This is the syntax for those bonds:
 ```
@@ -267,9 +267,9 @@ The options for chirality are `CCW` and `CW` for counterclockwise and clockwise.
 
 **You cannot define bonds between two small molecule chains**. In cases, where the PDB defines molecules in "multiple residues", you must merge the residues into a single sdf file first.
 
-**You must remove any leaving groups from your input molecules before inputting them into the network, but the code will handle leaving groups on the sidechain that is being modified automatically.** There is code for providing leaving group dynamically from the hydra config, but that is experimental and we have not fully tested it. 
+**You must remove any leaving groups from your input molecules before inputting them into the network, but the code will handle leaving groups on the sidechain that is being modified automatically.** There is code for providing leaving group dynamically from the hydra config, but that is experimental and we have not fully tested it.
 
-Given all of that background, this is how you specify covalent modification structure prediction to RFAA. 
+Given all of that background, this is how you specify covalent modification structure prediction to RFAA.
 
 ```
 defaults:
@@ -277,12 +277,12 @@ defaults:
 
 job_name: 7s69_A
 
-protein_inputs: 
-  A: 
+protein_inputs:
+  A:
     fasta_file: examples/protein/7s69_A.fasta
 
 sm_inputs:
-  B: 
+  B:
     input: examples/small_molecule/7s69_glycan.sdf
     input_type: sdf
 
@@ -317,10 +317,10 @@ Here are the confidence metrics:
 2. pae, a LxL tensor where the model predicts the error of every j position if the ith position's frame is aligned (or atom frame for atom nodes)
 3. pde, a LxL tensor where the model predicts the unsigned error of the each pairwise distance
 4. mean_plddt, the mean over all the plddts
-5. mean_pae, the mean over all pairwise predicted aligned errors 
+5. mean_pae, the mean over all pairwise predicted aligned errors
 6. pae_prot, the mean over all pairwise protein residues
-7. pae_inter, the mean over all the errors of protein residues with respect to atom frames and atom coordinates with respect to protein frames. **This was the primary confidence metric we used in the paper and expect cases with pae_inter <10 to have high quality docks.** 
+7. pae_inter, the mean over all the errors of protein residues with respect to atom frames and atom coordinates with respect to protein frames. **This was the primary confidence metric we used in the paper and expect cases with pae_inter <10 to have high quality docks.**
 
 <a id="conclusion"></a>
 ### Conclusion
-We expect that RFAA will continue to improve and will share new models as we create them. Additionally, we are excited to see how the community uses RFAA and RFdiffusionAA and would love to get feedback and review PRs as necessary. 
+We expect that RFAA will continue to improve and will share new models as we create them. Additionally, we are excited to see how the community uses RFAA and RFdiffusionAA and would love to get feedback and review PRs as necessary.

@@ -132,10 +132,10 @@ def get_seqsep_protein_sm(idx, bond_feats, dist_matrix, sm_mask):
     sm_mask_2d = sm_mask[None,:]*sm_mask[:,None]
     prot_mask_2d = (~sm_mask[None,:]) * (~sm_mask[:,None])
     inter_mask_2d = (~sm_mask[None,:]) * (sm_mask[:,None]) + (sm_mask[None,:]) * (~sm_mask[:,None])
-    
+
     res_dist[(res_dist > 1) | (res_dist < -1)] = 0.0
     atom_dist[(atom_dist > 1)] = 0.0
-    
+
     seqsep = sm_mask_2d*atom_dist + prot_mask_2d*res_dist + inter_mask_2d*(bond_feats==6)
 
     return seqsep.unsqueeze(-1)
@@ -190,7 +190,7 @@ def get_res_atom_dist(idx, bond_feats, dist_matrix, sm_mask, minpos_res=-32, max
         closest_atom = i_sm[torch.argmin(torch.abs(res_dist_prot[~sm_mask,:][:,i_prot]), dim=-1)]
         atom_dist_inter[~sm_mask,:] = atom_dist_sm[closest_atom,:] + 1
         atom_dist_inter[:,~sm_mask] = atom_dist_sm[:,closest_atom] + 1
-    
+
     res_dist = res_dist_prot * prot_mask_2d + res_dist_inter * inter_mask_2d + res_dist_sm * sm_mask_2d
     atom_dist = atom_dist_prot * prot_mask_2d + atom_dist_inter * inter_mask_2d + atom_dist_sm * sm_mask_2d
 
@@ -227,7 +227,7 @@ def get_relpos(idx, bond_feats, sm_mask, inter_pos=32, maxpath=32):
     seqsep = idx[:,None,:] - idx[:,:,None] # (B, L, L)
 
     # intra-small molecule: bond distances
-    sm_bond_feats = torch.zeros_like(bond_feats) + sm_mask*bond_feats                                      
+    sm_bond_feats = torch.zeros_like(bond_feats) + sm_mask*bond_feats
     G = nx.from_numpy_matrix(sm_bond_feats.detach().cpu().numpy())
     paths = dict(nx.all_pairs_shortest_path_length(G,cutoff=maxpath))
     paths = [(i,j,vij) for i,vi in paths.items() for j,vij in vi.items()]
@@ -256,7 +256,7 @@ def make_full_graph(xyz, pair, idx):
 
     B, L = xyz.shape[:2]
     device = xyz.device
-    
+
     # seq sep
     sep = idx[:,None,:] - idx[:,:,None]
     b,i,j = torch.where(sep.abs() > 0)
@@ -355,7 +355,7 @@ def make_atom_graph( xyz, mask, num_bonds, top_k=16, maxbonds=4 ):
     index[mask] = torch.arange(natm, device=device)
     src=index[bi,ri,ai]
     tgt=index[bi,rj,aj]
-    
+
     G = dgl.graph((src, tgt), num_nodes=natm).to(device)
     G.edata['rel_pos'] = (xyz[bi,ri,ai] - xyz[bi,rj,aj]).detach() # no gradient through basis function
 
@@ -423,7 +423,7 @@ def make_rot_axis(angs, u, eps=1e-6):
 #    alpha/beta/gamma/delta: 12-15
 #    nu2/nu1/nu0: 16-18
 #    chi_1(na): 19
-# 
+#
 # RTs_in_base_frame:
 #    omega/phi/psi: 0-2
 #    chi_1-4(prot): 3-6
@@ -444,7 +444,7 @@ def make_rot_axis(angs, u, eps=1e-6):
 class XYZConverter(nn.Module):
     def __init__(self):
         super(XYZConverter, self).__init__()
-        
+
         self.register_buffer("torsion_indices", ChemData().torsion_indices, persistent=False)
         self.register_buffer("torsion_can_flip", ChemData().torsion_can_flip.to(torch.int32), persistent=False)
         self.register_buffer("ref_angles", ChemData().reference_angles, persistent=False)
@@ -471,12 +471,12 @@ class XYZConverter(nn.Module):
 
         # phi
         RTF2 = torch.einsum(
-            'brij,brjk,brkl->bril', 
+            'brij,brjk,brkl->bril',
             RTF0, self.RTs_in_base_frame[seq,1,:], make_rotX(alphas[:,:,1,:]))
 
         # psi
         RTF3 = torch.einsum(
-            'brij,brjk,brkl->bril', 
+            'brij,brjk,brkl->bril',
             RTF0, self.RTs_in_base_frame[seq,2,:], make_rotX(alphas[:,:,2,:]))
 
         # CB bend
@@ -492,35 +492,35 @@ class XYZConverter(nn.Module):
         NCpp = NCp - torch.sum(NCp*NCr, dim=-1, keepdim=True)/ torch.sum(NCr*NCr, dim=-1, keepdim=True) * NCr
         CBrotaxis2 = (CBr-CAr).cross(NCpp)
         CBrotaxis2 /= torch.linalg.norm(CBrotaxis2, dim=-1, keepdim=True)+1e-8
-        
+
         CBrot1 = make_rot_axis(alphas[:,:,7,:], CBrotaxis1 )
         CBrot2 = make_rot_axis(alphas[:,:,8,:], CBrotaxis2 )
-        
+
         RTF8 = torch.einsum(
-            'brij,brjk,brkl->bril', 
+            'brij,brjk,brkl->bril',
             RTF0, CBrot1,CBrot2)
 
         # chi1 + CG bend
         RTF4 = torch.einsum(
-            'brij,brjk,brkl,brlm->brim', 
-            RTF8, 
-            self.RTs_in_base_frame[seq,3,:], 
-            make_rotX(alphas[:,:,3,:]), 
+            'brij,brjk,brkl,brlm->brim',
+            RTF8,
+            self.RTs_in_base_frame[seq,3,:],
+            make_rotX(alphas[:,:,3,:]),
             make_rotZ(alphas[:,:,9,:]))
 
         # chi2
         RTF5 = torch.einsum(
-            'brij,brjk,brkl->bril', 
+            'brij,brjk,brkl->bril',
             RTF4, self.RTs_in_base_frame[seq,4,:],make_rotX(alphas[:,:,4,:]))
 
         # chi3
         RTF6 = torch.einsum(
-            'brij,brjk,brkl->bril', 
+            'brij,brjk,brkl->bril',
             RTF5,self.RTs_in_base_frame[seq,5,:],make_rotX(alphas[:,:,5,:]))
 
         # chi4
         RTF7 = torch.einsum(
-            'brij,brjk,brkl->bril', 
+            'brij,brjk,brkl->bril',
             RTF6,self.RTs_in_base_frame[seq,6,:],make_rotX(alphas[:,:,6,:]))
 
         # ignore RTs_in_base_frame[seq,7:9,:] and alphas[:,:,10:12,:]
@@ -529,82 +529,82 @@ class XYZConverter(nn.Module):
         if (not ChemData().params.use_phospate_frames_for_NA):
             # NA nu1 --> from base frame
             RTF14 = torch.einsum(
-                'brij,brjk,brkl->bril', 
+                'brij,brjk,brkl->bril',
                 RTF0, self.RTs_in_base_frame[seq,14,:], make_rotX(alphas[:,:,17,:]))
 
             # NA nu0 --> from base frame
             RTF15 = torch.einsum(
-                'brij,brjk,brkl->bril', 
+                'brij,brjk,brkl->bril',
                 RTF0, self.RTs_in_base_frame[seq,15,:], make_rotX(alphas[:,:,18,:]))
 
             # NA chi --> from base frame
             RTF16= torch.einsum(
-                'brij,brjk,brkl->bril', 
+                'brij,brjk,brkl->bril',
                 RTF0, self.RTs_in_base_frame[seq,16,:], make_rotX(alphas[:,:,19,:]))
 
             # NA nu2 --> from nu1 frame
             RTF13 = torch.einsum(
-                'brij,brjk,brkl->bril', 
+                'brij,brjk,brkl->bril',
                 RTF14, self.RTs_in_base_frame[seq,13,:], make_rotX(alphas[:,:,16,:]))
 
             # NA delta --> from nu2 frame
             RTF12 = torch.einsum(
-                'brij,brjk,brkl->bril', 
+                'brij,brjk,brkl->bril',
                 RTF13, self.RTs_in_base_frame[seq,12,:], make_rotX(alphas[:,:,15,:]))
 
             # NA gamma --> from delta frame
             RTF11 = torch.einsum(
-                'brij,brjk,brkl->bril', 
+                'brij,brjk,brkl->bril',
                 RTF12, self.RTs_in_base_frame[seq,11,:], make_rotX(alphas[:,:,14,:]))
 
             # NA beta --> from gamma frame
             RTF10 = torch.einsum(
-                'brij,brjk,brkl->bril', 
+                'brij,brjk,brkl->bril',
                 RTF11, self.RTs_in_base_frame[seq,10,:], make_rotX(alphas[:,:,13,:]))
 
             # NA alpha --> from beta frame
             RTF9 = torch.einsum(
-                'brij,brjk,brkl->bril', 
+                'brij,brjk,brkl->bril',
                 RTF10, self.RTs_in_base_frame[seq,9,:], make_rotX(alphas[:,:,12,:]))
         else:
             # NA alpha
             RTF9 = torch.einsum(
-                'brij,brjk,brkl->bril', 
+                'brij,brjk,brkl->bril',
                 RTF0, self.RTs_in_base_frame[seq,9,:], make_rotX(alphas[:,:,12,:]))
 
             # NA beta
             RTF10 = torch.einsum(
-                'brij,brjk,brkl->bril', 
+                'brij,brjk,brkl->bril',
                 RTF9, self.RTs_in_base_frame[seq,10,:], make_rotX(alphas[:,:,13,:]))
 
             # NA gamma
             RTF11 = torch.einsum(
-                'brij,brjk,brkl->bril', 
+                'brij,brjk,brkl->bril',
                 RTF10, self.RTs_in_base_frame[seq,11,:], make_rotX(alphas[:,:,14,:]))
 
             # NA delta
             RTF12 = torch.einsum(
-                'brij,brjk,brkl->bril', 
+                'brij,brjk,brkl->bril',
                 RTF11, self.RTs_in_base_frame[seq,12,:], make_rotX(alphas[:,:,15,:]))
 
             # NA nu2 - from gamma frame
             RTF13 = torch.einsum(
-                'brij,brjk,brkl->bril', 
+                'brij,brjk,brkl->bril',
                 RTF11, self.RTs_in_base_frame[seq,13,:], make_rotX(alphas[:,:,16,:]))
 
             # NA nu1
             RTF14 = torch.einsum(
-                'brij,brjk,brkl->bril', 
+                'brij,brjk,brkl->bril',
                 RTF13, self.RTs_in_base_frame[seq,14,:], make_rotX(alphas[:,:,17,:]))
 
             # NA nu0
             RTF15 = torch.einsum(
-                'brij,brjk,brkl->bril', 
+                'brij,brjk,brkl->bril',
                 RTF14, self.RTs_in_base_frame[seq,15,:], make_rotX(alphas[:,:,18,:]))
 
             # NA chi - from nu1 frame
             RTF16= torch.einsum(
-                'brij,brjk,brkl->bril', 
+                'brij,brjk,brkl->bril',
                 RTF14, self.RTs_in_base_frame[seq,16,:], make_rotX(alphas[:,:,19,:]))
 
 
@@ -614,14 +614,14 @@ class XYZConverter(nn.Module):
         ),dim=2)
 
         xyzs = torch.einsum(
-            'brtij,brtj->brti', 
+            'brtij,brtj->brti',
             RTframes.gather(2,self.base_indices[seq][...,None,None].repeat(1,1,1,4,4)), basexyzs
         )
 
         return RTframes, xyzs[...,:3]
 
 
-    def get_tor_mask(self, seq, mask_in=None): 
+    def get_tor_mask(self, seq, mask_in=None):
         B,L = seq.shape[:2]
         dna_mask = is_nucleic(seq)
         prot_mask = ~dna_mask
@@ -671,17 +671,17 @@ class XYZConverter(nn.Module):
         CB = xyz[:,:,4,:3]
         t = th_ang_v(CB-CA,NC-CA)
         t0 = self.ref_angles[seq][...,0,:]
-        torsions[:,:,7,:] = torch.stack( 
+        torsions[:,:,7,:] = torch.stack(
             (torch.sum(t*t0,dim=-1),t[...,0]*t0[...,1]-t[...,1]*t0[...,0]),
             dim=-1 )
-    
+
         # CB twist
         NCCA = NC-CA
         NCp = xyz[:,:,2,:3] - xyz[:,:,0,:3]
         NCpp = NCp - torch.sum(NCp*NCCA, dim=-1, keepdim=True)/ torch.sum(NCCA*NCCA, dim=-1, keepdim=True) * NCCA
         t = th_ang_v(CB-CA,NCpp)
         t0 = self.ref_angles[seq][...,1,:]
-        torsions[:,:,8,:] = torch.stack( 
+        torsions[:,:,8,:] = torch.stack(
             (torch.sum(t*t0,dim=-1),t[...,0]*t0[...,1]-t[...,1]*t0[...,0]),
             dim=-1 )
 
@@ -689,10 +689,10 @@ class XYZConverter(nn.Module):
         CG = xyz[:,:,5,:3]
         t = th_ang_v(CG-CB,CA-CB)
         t0 = self.ref_angles[seq][...,2,:]
-        torsions[:,:,9,:] = torch.stack( 
+        torsions[:,:,9,:] = torch.stack(
             (torch.sum(t*t0,dim=-1),t[...,0]*t0[...,1]-t[...,1]*t0[...,0]),
             dim=-1 )
-    
+
         mask0 = (torch.isnan(torsions[...,0])).nonzero()
         mask1 = (torch.isnan(torsions[...,1])).nonzero()
         torsions[mask0[:,0],mask0[:,1],mask0[:,2],0] = 1.0

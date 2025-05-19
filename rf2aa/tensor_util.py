@@ -19,7 +19,7 @@ class ExceptionLogger(contextlib.AbstractContextManager):
 
     def __exit__(self, exc_type, exc_value, traceback):
         if exc_type:
-            print("***Logging exception {}***".format((exc_type, exc_value, 
+            print("***Logging exception {}***".format((exc_type, exc_value,
                 traceback)))
 
 
@@ -43,12 +43,12 @@ def assert_close(got, want, atol=1e-4, rtol=1e-8):
     got = torch.nan_to_num(got)
     want = torch.nan_to_num(want)
     if got.shape != want.shape:
-        raise ValueError(f'Wrong shapes: got shape {got.shape} want shape {want.shape}')    
+        raise ValueError(f'Wrong shapes: got shape {got.shape} want shape {want.shape}')
     elif not torch.allclose(got, want, atol=atol, rtol=rtol):
         maximum_difference = torch.abs(got - want).max().item()
         indices_different = torch.nonzero(got != want)
         raise ValueError(f'Maximum difference: {maximum_difference}, indices different: {indices_different}')
-        
+
 
 def cpu(e):
     if isinstance(e, dict):
@@ -132,7 +132,7 @@ class TensorMatchOperator(BaseOperator):
         super(TensorMatchOperator, self).__init__(**kwargs)
         self.atol = atol
         self.rtol = rtol
-    
+
     def _equal_msg(self, got, want):
         if got.shape != want.shape:
             return f'got shape {got.shape} want shape {want.shape}'
@@ -152,7 +152,7 @@ class TensorMatchOperator(BaseOperator):
             msg = f'got {got}, want: {want}'
         return msg
 
-    
+
     def give_up_diffing(self, level, diff_instance):
         msg = self._equal_msg(level.t1, level.t2)
         if msg:
@@ -172,7 +172,7 @@ class NumpyMatchOperator(TensorMatchOperator):
 
 
 def cmp(got, want, **kwargs):
-    
+
     dd = DeepDiff(got, want, custom_operators=[
         NumpyMatchOperator(types=[np.ndarray], **kwargs),
         TensorMatchOperator(types=[torch.Tensor], **kwargs)])

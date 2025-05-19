@@ -6,10 +6,10 @@ from openbabel import openbabel
 from rf2aa.chemical import ChemicalData as ChemData
 
 PARAMS = {
-    'DMIN':1, 
-    'DMID':4, 
-    'DMAX':20.0, 
-    'DBINS1':30, 
+    'DMIN':1,
+    'DMID':4,
+    'DMAX':20.0,
+    'DBINS1':30,
     'DBINS2':30,
     'ABINS':36,
     'USE_CB':False
@@ -18,7 +18,7 @@ PARAMS = {
 # ============================================================
 def get_pair_dist(a, b):
     """calculate pair distances between two sets of points
-    
+
     Parameters
     ----------
     a,b : pytorch tensors of shape [batch,nres,3]
@@ -35,7 +35,7 @@ def get_pair_dist(a, b):
 # ============================================================
 def get_ang(a, b, c, eps=1e-6):
     """calculate planar angles for all consecutive triples (a[i],b[i],c[i])
-    from Cartesian coordinates of three sets of atoms a,b,c 
+    from Cartesian coordinates of three sets of atoms a,b,c
 
     Parameters
     ----------
@@ -94,13 +94,13 @@ def generate_Cbeta(N,Ca,C):
     Cb = -0.57910144*a + 0.5689693*b - 0.5441217*c + Ca
 
     return Cb
-    
+
 # ============================================================
 
 def xyz_to_c6d(xyz, params=PARAMS):
-    """convert cartesian coordinates into 2d distance 
+    """convert cartesian coordinates into 2d distance
     and orientation maps
-    
+
     Parameters
     ----------
     xyz : pytorch tensor of shape [batch,nres,3,3]
@@ -108,9 +108,9 @@ def xyz_to_c6d(xyz, params=PARAMS):
     Returns
     -------
     c6d : pytorch tensor of shape [batch,nres,nres,4]
-          stores stacked dist,omega,theta,phi 2D maps 
+          stores stacked dist,omega,theta,phi 2D maps
     """
-    
+
     batch = xyz.shape[0]
     nres = xyz.shape[1]
 
@@ -141,13 +141,13 @@ def xyz_to_c6d(xyz, params=PARAMS):
     # fix long-range distances
     c6d[...,0][c6d[...,0]>=params['DMAX']] = 999.9
     c6d = torch.nan_to_num(c6d)
-    
+
     return c6d
-    
+
 def xyz_to_t2d(xyz_t, mask, params=PARAMS):
-    """convert template cartesian coordinates into 2d distance 
+    """convert template cartesian coordinates into 2d distance
     and orientation maps
-    
+
     Parameters
     ----------
     xyz_t : pytorch tensor of shape [batch,templ,nres,3,3]
@@ -157,7 +157,7 @@ def xyz_to_t2d(xyz_t, mask, params=PARAMS):
     Returns
     -------
     t2d : pytorch tensor of shape [batch,nres,nres,37+6+3]
-          stores stacked dist,omega,theta,phi 2D maps 
+          stores stacked dist,omega,theta,phi 2D maps
     """
     B, T, L = xyz_t.shape[:3]
     c6d = xyz_to_c6d(xyz_t[:,:,:,:3].view(B*T,L,3,3), params=params)
@@ -208,9 +208,9 @@ def dist_to_bins(dist,params=PARAMS):
     dstep1 = (params['DMID'] - params['DMIN']) / params['DBINS1']
     dstep2 = (params['DMAX'] - params['DMID']) / params['DBINS2']
     dbins = torch.cat([
-        torch.linspace(params['DMIN']+dstep1, params['DMID'], params['DBINS1'], 
+        torch.linspace(params['DMIN']+dstep1, params['DMID'], params['DBINS1'],
                        dtype=dist.dtype,device=dist.device),
-        torch.linspace(params['DMID']+dstep2, params['DMAX'], params['DBINS2'], 
+        torch.linspace(params['DMID']+dstep2, params['DMAX'], params['DBINS2'],
                        dtype=dist.dtype,device=dist.device),
     ])
     db = torch.bucketize(dist.contiguous(),dbins).long()
@@ -240,7 +240,7 @@ def c6d_to_bins(c6d, same_chain, negative=False, params=PARAMS):
         ob = torch.where(same_chain.bool(), ob.long(), params['ABINS'])
         tb = torch.where(same_chain.bool(), tb.long(), params['ABINS'])
         pb = torch.where(same_chain.bool(), pb.long(), params['ABINS']//2)
-    
+
     return torch.stack([db,ob,tb,pb],axis=-1).long()
 
 def standardize_dihedral_retain_first(a,b,c,d):
@@ -292,9 +292,9 @@ def get_atomize_protein_chirals(residues_atomize, lig_xyz, residue_atomize_mask,
     num_chiral_centers = chiral_atoms.shape[0]
     chiral_bonds = bond_feats[chiral_atoms] # find bonds to each chiral atom
     chiral_bonds_idx = chiral_bonds.nonzero() # find indices of each bonded neighbor to chiral atom
-    # in practice all chiral atoms in proteins have 3 heavy atom neighbors, so reshape to 3 
+    # in practice all chiral atoms in proteins have 3 heavy atom neighbors, so reshape to 3
     chiral_bonds_idx = chiral_bonds_idx.reshape(num_chiral_centers, 3, 2)
-    
+
     chirals = torch.zeros((num_chiral_centers, 5))
     chirals[:,0] = chiral_atoms.long()
     chirals[:, 1:-1] = chiral_bonds_idx[...,-1].long()

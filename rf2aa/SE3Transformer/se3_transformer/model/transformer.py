@@ -111,7 +111,7 @@ class SE3Transformer(nn.Module):
 
         # Fully fused convolutions when using Tensor Cores (and not low memory mode)
         fuse_level = ConvSE3FuseLevel.FULL if tensor_cores and not low_memory else ConvSE3FuseLevel.PARTIAL
-        
+
         div = dict((str(degree), channels_div) for degree in range(self.max_degree+1))
         div_fin = dict((str(degree), 1) for degree in range(self.max_degree+1))
         div_fin['0'] = channels_div
@@ -167,7 +167,7 @@ class SE3Transformer(nn.Module):
         # Add fused bases (per output degree, per input degree, and fully fused) to the dict
         basis = update_basis_with_fused(basis, self.max_degree, use_pad_trick=self.tensor_cores and not self.low_memory,
                                         fully_fused=self.tensor_cores and not self.low_memory)
-        
+
         if self.populate_edge=='lin':
             edge_feats = get_populated_edge_features(graph.edata['rel_pos'], edge_feats)
         elif self.populate_edge=='arcsin':

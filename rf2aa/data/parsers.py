@@ -52,7 +52,7 @@ def read_template_pdb(L, pdb_fn, target_chain=None):
     xyz = torch.full((L, 36, 3), np.nan).float()
     seq = torch.full((L,), 20).long()
     conf = torch.zeros(L,1).float()
-    
+
     with open(pdb_fn) as fp:
         for line in fp:
             if line[:4] != "ATOM":
@@ -66,7 +66,7 @@ def read_template_pdb(L, pdb_fn, target_chain=None):
                     xyz[idx, i_atm, :] = torch.tensor([float(line[30:38]), float(line[38:46]), float(line[46:54])])
                     break
             seq[idx] = aa_idx
-    
+
     mask = torch.logical_not(torch.isnan(xyz[:,:3,0])) # (L, 3)
     mask = mask.all(dim=-1)[:,None]
     conf = torch.where(mask, torch.full((L,1),0.1), torch.zeros(L,1)).float()
@@ -119,7 +119,7 @@ def read_multichain_pdb(pdb_fn, tmpl_chain=None, tmpl_conf=0.1):
             if line[:4] != "ATOM":
                 continue
                 outbatch = 0
-            
+
             resNo, atom, aa = int(line[22:26]), line[12:16], line[17:20]
             aa_idx = ChemData().aa2num[aa] if aa in ChemData().aa2num.keys() else 20
 
@@ -159,7 +159,7 @@ def parse_fasta(filename,  maxseq=10000, rmsa_alphabet=False):
         # skip labels
         if line[0] == '>':
             continue
-            
+
         # remove right whitespaces
         line = line.rstrip()
 
@@ -340,7 +340,7 @@ def parse_mixed_fasta(filename,  maxseq=8000):
         # skip labels
         if line[0] == '>':
             continue
-            
+
         # remove right whitespaces
         line = line.rstrip()
 
@@ -415,7 +415,7 @@ def parse_a3m(filename, maxseq=8000, paired=False):
         fstream = open(filename, 'r')
 
     for i, line in enumerate(fstream):
-        
+
         # skip labels
         if line[0] == '>':
             if paired: # paired MSAs only have a TAXID in the fasta header
@@ -430,7 +430,7 @@ def parse_a3m(filename, maxseq=8000, paired=False):
                     else:
                         taxIDs.append("") # query sequence
             continue
-            
+
         # remove right whitespaces
         line = line.rstrip()
 
@@ -574,13 +574,13 @@ def parse_templates(item, params):
 
     # get per-hit statistics from an .hhr file
     # (!!! assume that .hhr and .atab have the same hits !!!)
-    # [Probab, E-value, Score, Aligned_cols, 
+    # [Probab, E-value, Score, Aligned_cols,
     # Identities, Similarity, Sum_probs, Template_Neff]
     lines = open(infile[:-4]+'hhr', "r").readlines()
     pos = [i+1 for i,l in enumerate(lines) if l[0]=='>']
     for i,posi in enumerate(pos):
         hits[i].append([float(s) for s in re.sub('[=%]',' ',lines[posi]).split()[1::2]])
-        
+
     # parse templates from FFDB
     for hi in hits:
         #if hi[0] not in ffids:
@@ -597,13 +597,13 @@ def parse_templates(item, params):
     for data in hits:
         if len(data)<7:
             continue
-        
+
         qi,ti = np.array(data[1]).T
         _,sel1,sel2 = np.intersect1d(ti, data[6], return_indices=True)
         ncol = sel1.shape[0]
         if ncol < 10:
             continue
-        
+
         ids.append(data[0])
         f0d.append(data[3])
         f1d.append(np.array(data[2])[sel1])
@@ -618,7 +618,7 @@ def parse_templates(item, params):
     f0d = np.vstack(f0d).astype(np.float32)
     f1d = np.vstack(f1d).astype(np.float32)
     ids = ids
-        
+
     return xyz,mask,qmap,f0d,f1d,ids
 
 def parse_templates_raw(ffdb, hhr_fn, atab_fn, max_templ=20):
@@ -671,7 +671,7 @@ def parse_templates_raw(ffdb, hhr_fn, atab_fn, max_templ=20):
         ncol = sel1.shape[0]
         if ncol < 10:
             continue
-        
+
         ids.append(data[0])
         f0d.append(data[3])
         f1d.append(np.array(data[2])[sel1])
@@ -797,12 +797,12 @@ def parse_mol(filename, filetype="mol2", string=False, remove_H=True, find_autom
                 obmol.DeleteAtom(obmol.GetAtom(i))
             else:
                 i += 1
-    atomtypes = [ChemData().atomnum2atomtype.get(obmol.GetAtom(i).GetAtomicNum(), 'ATM') 
+    atomtypes = [ChemData().atomnum2atomtype.get(obmol.GetAtom(i).GetAtomicNum(), 'ATM')
                  for i in range(1, obmol.NumAtoms()+1)]
     msa = torch.tensor([ChemData().aa2num[x] for x in atomtypes])
     ins = torch.zeros_like(msa)
 
-    atom_coords = torch.tensor([[obmol.GetAtom(i).x(),obmol.GetAtom(i).y(), obmol.GetAtom(i).z()] 
+    atom_coords = torch.tensor([[obmol.GetAtom(i).x(),obmol.GetAtom(i).y(), obmol.GetAtom(i).z()]
                                 for i in range(1, obmol.NumAtoms()+1)]).unsqueeze(0) # (1, natoms, 3)
     mask = torch.full(atom_coords.shape[:-1], True) # (1, natoms,)
 
