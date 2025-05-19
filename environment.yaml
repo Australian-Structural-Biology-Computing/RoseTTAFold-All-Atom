@@ -16,7 +16,7 @@ dependencies:
   - async-timeout=4.0.3
   - attr=2.5.1
   - attrs=23.2.0
-  - biopython=1.85
+  - biopython
   - blas=2.121
   - blas-devel=3.9.0
   - blast-legacy=2.2.26
