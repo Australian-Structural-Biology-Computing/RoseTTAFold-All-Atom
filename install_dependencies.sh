@@ -3,7 +3,7 @@
 
 # install external program not supported by conda installation
 case "$(uname -s)" in
-    Linux*)     platform=linux;;
+    Linux*)     platform=linux;; 
     Darwin*)    platform=macosx;;
     *)          echo "unsupported OS type. exiting"; exit 1
 esac

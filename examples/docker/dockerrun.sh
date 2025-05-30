@@ -1,0 +1,4 @@
+docker run --gpus all -v `pwd`:/workdir/ -v $your_database_path/UniRef30_2020_06/:/mnt/databases/rfaa/latest/UniRef30_2020_06b/ -v $your_database_path/bfd/:/mnt/databases/rfaa/latest/bfd/ -v $your_database_path/pdb100_2021Mar03/:/pdb100_2021Mar03/ -v $your_weights_path/weights/RFAA_paper_weights.pt:/weights/RFAA_paper_weights.pt $your_dockerimage_name python -m rf2aa.run_inference -cd /workdir/ --config-name docker
+#your_database_path: path to the respective databases. See the readme for download instructions
+#your_weights_path: path to the weights file. See the readme for download instructions
+#your_dockerimage_name: name of the docker image you built. The command to build the image with a given tag is `docker build -t $your_dockerimage_name .` run from the main directory where the Dockerfile is located
